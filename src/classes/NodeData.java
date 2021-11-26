@@ -9,6 +9,13 @@ public class NodeData implements src.api.NodeData {
     String info;
     int tag;
 
+    public NodeData(int key, GeoLocation location) {
+        this.key = key;
+        this.location = location;
+    }
+
+
+
     @Override
     public int getKey() {
         return this.key;

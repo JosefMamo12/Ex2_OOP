@@ -11,11 +11,7 @@ public class GeoLocation implements api.GeoLocation {
         this.z = z;
 
     }
-    public GeoLocation(GeoLocation copy){
-        this.x = copy.x;
-        this.y = copy.y;
-        this.z = copy.z;
-    }
+
     @Override
     public double x() {
         return this.x;
