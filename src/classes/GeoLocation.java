@@ -1,23 +1,38 @@
 package src.classes;
 
 public class GeoLocation implements api.GeoLocation {
+    double x;
+    double y;
+    double z;
+
+    public GeoLocation(double x, double y, double z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+
+    }
+    public GeoLocation(GeoLocation copy){
+        this.x = copy.x;
+        this.y = copy.y;
+        this.z = copy.z;
+    }
     @Override
     public double x() {
-        return 0;
+        return this.x;
     }
 
     @Override
     public double y() {
-        return 0;
+        return this.y;
     }
 
     @Override
     public double z() {
-        return 0;
+        return this.z;
     }
 
     @Override
     public double distance(api.GeoLocation g) {
-        return 0;
+        return Math.sqrt(Math.pow(this.x - g.x(), 2) + Math.pow(this.y - g.y(), 2) + Math.pow(this.z - g.z(), 2));
     }
 }

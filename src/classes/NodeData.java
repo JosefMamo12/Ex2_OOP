@@ -2,50 +2,55 @@ package src.classes;
 
 import api.GeoLocation;
 
-public class NodeData implements src.api.NodeData{
+public class NodeData implements src.api.NodeData {
+    int key;
+    GeoLocation location;
+    double weight;
+    String info;
+    int tag;
 
     @Override
     public int getKey() {
-        return 0;
+        return this.key;
     }
 
     @Override
     public GeoLocation getLocation() {
-        return null;
+        return this.location;
     }
 
     @Override
     public void setLocation(GeoLocation p) {
-
+        this.location = p;
     }
 
     @Override
     public double getWeight() {
-        return 0;
+        return this.weight;
     }
 
     @Override
     public void setWeight(double w) {
-
+        weight = w;
     }
 
     @Override
     public String getInfo() {
-        return null;
+        return this.info;
     }
 
     @Override
     public void setInfo(String s) {
-
+        this.info = s;
     }
 
     @Override
     public int getTag() {
-        return 0;
+        return this.tag;
     }
 
     @Override
     public void setTag(int t) {
-
+        this.tag = t;
     }
 }
