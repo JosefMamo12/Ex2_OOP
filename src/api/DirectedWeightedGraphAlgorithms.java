@@ -1,4 +1,7 @@
 package api;
+import src.classes.DirectedWeightedGraph;
+import src.classes.NodeData;
+
 import java.util.List;
 /**
  * This interface represents a Directed (positive) Weighted Graph Theory Algorithms including:

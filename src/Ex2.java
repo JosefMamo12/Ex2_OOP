@@ -1,3 +1,5 @@
+package src;
+
 import api.DirectedWeightedGraph;
 import api.DirectedWeightedGraphAlgorithms;
 

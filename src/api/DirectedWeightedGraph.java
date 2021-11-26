@@ -1,4 +1,7 @@
 package api;
+import src.classes.EdgeData;
+import src.classes.NodeData;
+
 import java.util.Iterator;
 /**
  * This interface represents a Directional Weighted Graph,
