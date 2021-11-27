@@ -2,9 +2,7 @@ package src.classes;
 
 import org.w3c.dom.Node;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Vector;
+import java.util.*;
 
 
 public class DirectedWeightedGraph implements api.DirectedWeightedGraph {
@@ -60,7 +58,7 @@ public class DirectedWeightedGraph implements api.DirectedWeightedGraph {
 
     @Override
     public Iterator<EdgeData> edgeIter() {
-        return this.edges.iterator();
+       return edges.iterator();
     }
 
     @Override
@@ -71,11 +69,11 @@ public class DirectedWeightedGraph implements api.DirectedWeightedGraph {
     @Override
     public NodeData removeNode(int key) {
         if(this.nodes.containsKey(key)){
-            Iterator<EdgeData> iter = edgeIter(key);
-            while (iter.hasNext()){
-                EdgeData e = iter.next();
-                this.graph.get(key).remove(e.getDest());
-                mc++;
+            Iterator<EdgeData> it = edgeIter(key);
+            while (it.hasNext()){
+                EdgeData e = it.next();
+                it.remove();
+                removeEdge(e.getSrc(),e.getDest());
             }
             NodeData node = this.getNode(key);
             this.nodes.remove(key);
@@ -88,7 +86,14 @@ public class DirectedWeightedGraph implements api.DirectedWeightedGraph {
 
     @Override
     public EdgeData removeEdge(int src, int dest) {
-        return null;
+        EdgeData e = null;
+        if(src != dest && this.nodes.containsKey(src) && this.nodes.containsKey(dest) && this.graph.get(src).containsKey(dest)) {
+            e = this.graph.get(src).get(dest);
+            this.edges.remove(e);
+            this.graph.get(src).remove(dest);
+            mc++;
+        }
+        return e;
     }
 
     @Override
@@ -98,8 +103,9 @@ public class DirectedWeightedGraph implements api.DirectedWeightedGraph {
 
     @Override
     public int edgeSize() {
-        return this.edges.size();
-    }
+            return edges.size();
+
+        }
 
     @Override
     public int getMC() {

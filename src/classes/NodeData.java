@@ -2,6 +2,8 @@ package src.classes;
 
 import api.GeoLocation;
 
+import java.util.Objects;
+
 public class NodeData implements src.api.NodeData {
     int key;
     GeoLocation location;
@@ -14,7 +16,19 @@ public class NodeData implements src.api.NodeData {
         this.location = location;
     }
 
+    @Override
+    public boolean equals(Object o) {
 
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        NodeData nodeData = (NodeData) o;
+        return key == nodeData.key && Double.compare(nodeData.weight, weight) == 0 && tag == nodeData.tag && Objects.equals(location, nodeData.location) && Objects.equals(info, nodeData.info);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(key, location, weight, info, tag);
+    }
 
     @Override
     public int getKey() {
