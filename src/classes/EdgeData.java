@@ -16,7 +16,13 @@ public class EdgeData implements api.EdgeData {
         this.tag = 0;
         this.info = "";
     }
-
+    public EdgeData(EdgeData other){
+        this.src = other.src;
+        this.dest = other.dest;
+        this.info = other.info;
+        this.weight = other.weight;
+        this.tag = other.tag;
+    }
     @Override
     public int getSrc() {
         return this.src;

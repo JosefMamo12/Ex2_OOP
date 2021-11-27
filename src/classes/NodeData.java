@@ -15,6 +15,13 @@ public class NodeData implements src.api.NodeData {
         this.key = key;
         this.location = location;
     }
+    public NodeData(NodeData copy){
+        this.key = copy.key;
+        this.location = copy.location;
+        this.weight = copy.weight;
+        this.info = copy.info;
+        this.tag = copy.tag;
+    }
 
     @Override
     public boolean equals(Object o) {

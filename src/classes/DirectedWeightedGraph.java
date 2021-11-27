@@ -11,6 +11,12 @@ public class DirectedWeightedGraph implements api.DirectedWeightedGraph {
     HashMap<Integer, HashMap<Integer, EdgeData>> graph;
     int mc;
 
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(nodes, edges, graph, mc);
+    }
+
     public DirectedWeightedGraph(){
         this.nodes = new HashMap<>();
         this.edges = new Vector<>();
@@ -74,6 +80,8 @@ public class DirectedWeightedGraph implements api.DirectedWeightedGraph {
                 EdgeData e = it.next();
                 it.remove();
                 removeEdge(e.getSrc(),e.getDest());
+                if(this.nodes.containsKey(e.getDest()) && this.graph.get(e.getDest()).containsKey(e.getSrc()))
+                    removeEdge(e.getDest(),e.getSrc());
             }
             NodeData node = this.getNode(key);
             this.nodes.remove(key);
