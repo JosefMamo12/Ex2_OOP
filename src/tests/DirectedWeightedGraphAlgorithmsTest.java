@@ -3,10 +3,7 @@ import org.junit.jupiter.api.Test;
 import src.classes.*;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -25,9 +22,6 @@ class DirectedWeightedGraphAlgorithmsTest {
         g = new DirectedWeightedGraph();
     }
 
-    @Test
-    void getGraph() {
-    }
 
     @Test
     void copy() {
@@ -98,10 +92,49 @@ class DirectedWeightedGraphAlgorithmsTest {
 
     @Test
     void shortestPathDist() {
+        g = graphCreator(6);
+        g.connect(0,1,3);
+        g.connect(1,2,2);
+        g.connect(2,3,1);
+        g.connect(3,5,1);
+        g.connect(1,5,8);
+        g.connect(5,1,8);
+        g.connect(1,4,1);
+        g.connect(4,0,3);
+        DirectedWeightedGraphAlgorithms dwa = new DirectedWeightedGraphAlgorithms();
+        dwa.init(g);
+        double d = dwa.shortestPathDist(0,5);
+        assertEquals(d, 7);
     }
 
     @Test
     void shortestPath() {
+        g = graphCreator(13);
+        g.connect(0,1,3);
+        g.connect(1,2,2);
+        g.connect(2,3,1);
+        g.connect(3,5,1);
+        g.connect(1,5,8);
+        g.connect(5,1,8);
+        g.connect(5,10,6);
+        g.connect(0,10,1);
+        g.connect(10,12,10);
+        g.connect(12,6,2);
+        g.connect(6,9,12);
+        g.connect(9,6,12);
+        g.connect(3,9,20);
+        g.connect(11,9,10);
+        g.connect(12,11,5);
+        g.connect(11,8,3);
+        g.connect(8,3,4);
+        DirectedWeightedGraphAlgorithms dwa = new DirectedWeightedGraphAlgorithms();
+        dwa.init(g);
+        List<NodeData> lnd = dwa.shortestPath(0,9);
+        for (NodeData nodeData : lnd) {
+            System.out.print(nodeData.getKey() + "->");
+        }
+        System.out.println("null");
+//        assertEquals(d, 7);
     }
 
     @Test

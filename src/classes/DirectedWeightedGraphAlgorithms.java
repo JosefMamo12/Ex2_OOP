@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import com.google.gson.*;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -13,9 +14,8 @@ import java.io.IOException;
 import java.util.*;
 
 public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGraphAlgorithms {
-    DirectedWeightedGraph g;
-    int[] parent;
-    //    final int WHITE = 0, GREY = 1, BLACK = 2;
+    private DirectedWeightedGraph g;
+    private int[] parent;
     final double inf = Double.MAX_VALUE;
 
     @Override
@@ -109,14 +109,16 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
             while (!pq.isEmpty()) {
                 NodeData currNode = pq.poll();
                 Iterator<EdgeData> itr = g.edgeIter(currNode.getKey());
-                while (itr.hasNext() && !visited[itr.next().getDest()]) {
+                while (itr.hasNext()) {
                     EdgeData e = itr.next();
-                    NodeData neighbour = g.getNode(e.getDest());
-                    double weight = currNode.getWeight() + e.getWeight();
-                    if (weight < neighbour.getWeight()) {
-                        neighbour.setWeight(weight);
-                        parent[neighbour.getKey()] = currNode.getKey();
-                        pq.add(neighbour);
+                    if (!visited[e.getDest()]) {
+                        NodeData neighbour = g.getNode(e.getDest());
+                        double weight = currNode.getWeight() + e.getWeight();
+                        if (weight < neighbour.getWeight()) {
+                            neighbour.setWeight(weight);
+                            parent[neighbour.getKey()] = currNode.getKey();
+                            pq.add(neighbour);
+                        }
                     }
                 }
                 visited[currNode.getKey()] = true;
@@ -129,6 +131,16 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
 
     @Override
     public List<NodeData> shortestPath(int src, int dest) {
+        if(shortestPathDist(src,dest) != -1){
+            List<NodeData> lst = new LinkedList<>();
+            while (src != dest){
+                lst.add(g.getNode(dest));
+                dest = parent[dest];
+            }
+            lst.add(g.getNode(src));
+            Collections.reverse(lst);
+            return lst;
+        }
         return null;
     }
 
@@ -163,8 +175,12 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
         }
         jo.put("Edges", jaE);
         jo.put("Nodes", jaN);
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        JsonParser jp = new JsonParser();
+        JsonElement je = jp.parse(jo.toJSONString());
+        String prettyPrinting = gson.toJson(je);
         try (FileWriter f = new FileWriter(file)) {
-            f.write(jo.toJSONString());
+            f.write(prettyPrinting);
             f.flush();
         } catch (IOException e) {
             e.printStackTrace();
