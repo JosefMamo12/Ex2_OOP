@@ -1,5 +1,7 @@
 package src.classes;
 
+import java.util.Objects;
+
 public class GeoLocation implements api.GeoLocation {
     double x;
     double y;
@@ -10,6 +12,19 @@ public class GeoLocation implements api.GeoLocation {
         this.y = y;
         this.z = z;
 
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GeoLocation that = (GeoLocation) o;
+        return Double.compare(that.x, x) == 0 && Double.compare(that.y, y) == 0 && Double.compare(that.z, z) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y, z);
     }
 
     @Override

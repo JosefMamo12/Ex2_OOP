@@ -58,6 +58,37 @@ public class DirectedWeightedGraph implements api.DirectedWeightedGraph {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DirectedWeightedGraph that = (DirectedWeightedGraph) o;
+        if (nodes.size() != that.nodeSize() && edges.size() != that.edgeSize() && graph.size() != that.graph.size() && mc != that.mc) return false;
+        for (int i = 0; i <nodeSize() ; i++) {
+            if (!nodes.get(i).equals(that.nodes.get(i)))
+                return false;
+        }
+        for (int i = 0; i < edgeSize() ; i++) {
+            if(!edges.get(i).equals(that.edges.get(i)))
+                return false;
+        }
+        Iterator<Map.Entry<Integer, HashMap<Integer, EdgeData>>> itr1 = graph.entrySet().iterator();
+        Iterator<Map.Entry<Integer, HashMap<Integer, EdgeData>>> itr2 = that.graph.entrySet().iterator();
+        while(itr1.hasNext() || itr2.hasNext()){
+            Map.Entry<Integer,HashMap<Integer,EdgeData>> e1 = itr1.next();
+            Map.Entry<Integer,HashMap<Integer,EdgeData>> e2 = itr2.next();
+            int key1 = e1.getKey();
+            int key2 = e2.getKey();
+            if (key1 != key2) return false;
+            Iterator<EdgeData> eItr1 = edgeIter(key1);
+            Iterator<EdgeData> eItr2 = edgeIter(key2);
+            while(eItr1.hasNext() || eItr2.hasNext()){
+                if(!eItr1.next().equals(eItr2.next()))return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
     public Iterator<NodeData> nodeIter() {
         return this.nodes.values().iterator();
     }

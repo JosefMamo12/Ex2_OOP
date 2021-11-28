@@ -2,6 +2,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import src.classes.*;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -21,7 +22,7 @@ class DirectedWeightedGraphAlgorithmsTest {
     @BeforeEach
     void Initialization() {
         initSeed(0);
-        DirectedWeightedGraph testingGraph = new DirectedWeightedGraph();
+        g = new DirectedWeightedGraph();
     }
 
     @Test
@@ -113,6 +114,20 @@ class DirectedWeightedGraphAlgorithmsTest {
 
     @Test
     void load() {
+        DirectedWeightedGraphAlgorithms dwa = new DirectedWeightedGraphAlgorithms();
+        dwa.init(g);
+        dwa.load("Assignments/Ex2/data/TestJsonGraph.json");
+        DirectedWeightedGraph compareToJson = new DirectedWeightedGraph();
+        NodeData nd = new NodeData(0,new GeoLocation(35.19589389346247,32.10152879327731,0.0));
+        NodeData nd1 = new NodeData(1,new GeoLocation(35.20319591121872,32.10318254621849,0.0));
+        NodeData nd2 = new NodeData(2,new GeoLocation(35.20752617756255,32.1025646605042,0.0));
+        compareToJson.addNode(nd);
+        compareToJson.addNode(nd1);
+        compareToJson.addNode(nd2);
+        compareToJson.connect(0,2,1.3118716362419698);
+        compareToJson.connect(0,1,1.232037506070033);
+        compareToJson.connect(1,0,1.8635670623870366);
+        assertEquals(g,compareToJson);
     }
 
     @Test
