@@ -3,9 +3,9 @@ package src.classes;
 import java.util.Objects;
 
 public class GeoLocation implements api.GeoLocation {
-    double x;
-    double y;
-    double z;
+    private double x;
+    private double y;
+    private double z;
 
     public GeoLocation(double x, double y, double z) {
         this.x = x;
@@ -35,6 +35,11 @@ public class GeoLocation implements api.GeoLocation {
     @Override
     public double y() {
         return this.y;
+    }
+
+    @Override
+    public String toString() {
+        return x + ","+ y + "," + z ;
     }
 
     @Override

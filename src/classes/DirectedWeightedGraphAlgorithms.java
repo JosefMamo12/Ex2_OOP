@@ -1,19 +1,22 @@
 package src.classes;
 
 import com.google.gson.*;
+import com.google.gson.stream.JsonWriter;
 import org.jetbrains.annotations.NotNull;
-import org.w3c.dom.Node;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
-import javax.swing.text.html.HTMLDocument;
-import java.io.FileNotFoundException;
+import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
 public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGraphAlgorithms {
     DirectedWeightedGraph g;
     int[] parent;
-//    final int WHITE = 0, GREY = 1, BLACK = 2;
+    //    final int WHITE = 0, GREY = 1, BLACK = 2;
+    final double inf = Double.MAX_VALUE;
 
     @Override
     public void init(DirectedWeightedGraph g) {
@@ -35,7 +38,7 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
         Iterator<NodeData> nodeIt = g.nodeIter();
         while (nodeIt.hasNext()) {
             NodeData node = nodeIt.next();
-            copy.nodes.put(node.key, new NodeData(node));
+            copy.nodes.put(node.getKey(), new NodeData(node));
         }
         Iterator<EdgeData> edgeIt = g.edgeIter();
         while (edgeIt.hasNext()) {
@@ -60,7 +63,6 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
     public boolean isConnected() {
         if (g == null)
             return true;
-        clean();
         boolean[] visited = new boolean[g.nodeSize()];
         for (Map.Entry<Integer, HashMap<Integer, EdgeData>> entry : g.graph.entrySet()) {
             Integer entryKey = entry.getKey();
@@ -99,7 +101,30 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
 
     @Override
     public double shortestPathDist(int src, int dest) {
-        return 0;
+        if (g != null && g.nodes.containsKey(src) && g.nodes.containsKey(dest)) {
+            boolean[] visited = new boolean[g.nodeSize()];
+            g.getNode(src).setWeight(0);
+            PriorityQueue<NodeData> pq = new PriorityQueue<>();
+            pq.add(g.getNode(src));
+            while (!pq.isEmpty()) {
+                NodeData currNode = pq.poll();
+                Iterator<EdgeData> itr = g.edgeIter(currNode.getKey());
+                while (itr.hasNext() && !visited[itr.next().getDest()]) {
+                    EdgeData e = itr.next();
+                    NodeData neighbour = g.getNode(e.getDest());
+                    double weight = currNode.getWeight() + e.getWeight();
+                    if (weight < neighbour.getWeight()) {
+                        neighbour.setWeight(weight);
+                        parent[neighbour.getKey()] = currNode.getKey();
+                        pq.add(neighbour);
+                    }
+                }
+                visited[currNode.getKey()] = true;
+            }
+            if (g.getNode(dest).getWeight() != inf)
+                return g.getNode(dest).getWeight();
+        }
+        return -1;
     }
 
     @Override
@@ -112,9 +137,40 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public boolean save(String file) {
-        return false;
+        JSONObject jo = new JSONObject();
+        JSONArray jaE = new JSONArray();
+        JSONArray jaN = new JSONArray();
+        for (Map.Entry<Integer, HashMap<Integer, EdgeData>> entry : g.graph.entrySet()) {
+            Integer entryKey = entry.getKey();
+            NodeData nd = g.getNode(entryKey);
+            JSONObject node = new JSONObject();
+            node.put("id", nd.getKey());
+            node.put("pos", nd.getLocation().toString());
+            jaN.add(node);
+            for (Map.Entry<Integer, EdgeData> innerEntry : entry.getValue().entrySet()) {
+                Integer innerKey = innerEntry.getKey();
+                EdgeData innerEdge = innerEntry.getValue();
+                JSONObject edge = new JSONObject();
+                edge.put("src", innerEdge.getSrc());
+                edge.put("w", innerEdge.getWeight());
+                edge.put("dest", innerEdge.getDest());
+                jaE.add(edge);
+
+            }
+        }
+        jo.put("Edges", jaE);
+        jo.put("Nodes", jaN);
+        try (FileWriter f = new FileWriter(file)) {
+            f.write(jo.toJSONString());
+            f.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -148,8 +204,8 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
             int src = edge.get("src").getAsInt();
             int dest = edge.get("dest").getAsInt();
             double weight = edge.get("w").getAsDouble();
-            EdgeData ed = new EdgeData(src,dest,weight);
-            this.g.connect(src,dest,weight);
+            EdgeData ed = new EdgeData(src, dest, weight);
+            this.g.connect(src, dest, weight);
         }
     }
 

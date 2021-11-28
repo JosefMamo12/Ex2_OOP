@@ -1,23 +1,25 @@
 package src.classes;
 
 import api.GeoLocation;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
-public class NodeData implements src.api.NodeData {
-    int key;
-    GeoLocation location;
-    double weight;
-    String info;
-    int tag;
+public class NodeData implements src.api.NodeData, Comparable<NodeData> {
+    private int key;
+    private GeoLocation location;
+    private double weight;
+    private String info;
+    private int tag;
 
     public NodeData(int key, GeoLocation location) {
         this.key = key;
-        this.location = location;
+        this.setLocation(location);
+        this.weight = Double.MAX_VALUE;
     }
     public NodeData(NodeData copy){
         this.key = copy.key;
-        this.location = copy.location;
+        this.setLocation(copy.getLocation());
         this.weight = copy.weight;
         this.info = copy.info;
         this.tag = copy.tag;
@@ -29,12 +31,12 @@ public class NodeData implements src.api.NodeData {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         NodeData nodeData = (NodeData) o;
-        return key == nodeData.key && Double.compare(nodeData.weight, weight) == 0 && tag == nodeData.tag && Objects.equals(location, nodeData.location) && Objects.equals(info, nodeData.info);
+        return key == nodeData.key && Double.compare(nodeData.weight, weight) == 0 && tag == nodeData.tag && Objects.equals(getLocation(), nodeData.getLocation()) && Objects.equals(info, nodeData.info);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(key, location, weight, info, tag);
+        return Objects.hash(key, getLocation(), weight, info, tag);
     }
 
     @Override
@@ -80,5 +82,12 @@ public class NodeData implements src.api.NodeData {
     @Override
     public void setTag(int t) {
         this.tag = t;
+    }
+
+    @Override
+    public int compareTo(@NotNull NodeData o) {
+        if (this.weight > o.weight) return 1;
+        else if(this.weight < o.weight) return -1;
+        return 0;
     }
 }

@@ -40,9 +40,9 @@ public class DirectedWeightedGraph implements api.DirectedWeightedGraph {
 
     @Override
     public void addNode(NodeData n) {
-        if (!this.nodes.containsKey(n.key)) {
-            this.nodes.put(n.key,n);
-            this.graph.put(n.key,new HashMap<>());
+        if (!this.nodes.containsKey(n.getKey())) {
+            this.nodes.put(n.getKey(),n);
+            this.graph.put(n.getKey(),new HashMap<>());
             this.mc++;
         }
     }

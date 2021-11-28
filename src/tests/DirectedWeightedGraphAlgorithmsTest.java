@@ -110,6 +110,18 @@ class DirectedWeightedGraphAlgorithmsTest {
 
     @Test
     void save() {
+        DirectedWeightedGraph fG = new DirectedWeightedGraph();
+        DirectedWeightedGraph tG = new DirectedWeightedGraph();
+        DirectedWeightedGraphAlgorithms dwa = new DirectedWeightedGraphAlgorithms();
+        DirectedWeightedGraphAlgorithms tdwa = new DirectedWeightedGraphAlgorithms();
+        dwa.init(fG);
+        tdwa.init(tG);
+        dwa.load("Assignments/Ex2/data/G1.json");
+        DirectedWeightedGraph loadedGraphBeforeSave = dwa.copy();
+        dwa.save("Assignments/Ex2/data/G1Copy.json");
+        tdwa.load("Assignments/Ex2/data/G1Copy.json");
+        DirectedWeightedGraph loadedGraphAfterSave = tdwa.copy();
+        assertEquals(loadedGraphAfterSave,loadedGraphBeforeSave);
     }
 
     @Test
@@ -180,5 +192,17 @@ class DirectedWeightedGraphAlgorithmsTest {
             gr.connect(l, r, w);
         }
         return gr;
+    }
+    private void graphCreator1(int numOfNodes, int numOfEdges) {
+        nodeCreator(numOfNodes);
+        for (NodeData node : this.nodes) {
+            g.addNode(node);
+        }
+        while (g.edgeSize() < numOfEdges) {
+            int l = _rand.nextInt(numOfNodes);
+            int r = _rand.nextInt(numOfEdges);
+            double w = _rand.nextDouble() + 1;
+            g.connect(l, r, w);
+        }
     }
 }

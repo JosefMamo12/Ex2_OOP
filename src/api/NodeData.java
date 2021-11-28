@@ -5,7 +5,7 @@ package src.api;
  * node (vertex) in a (directional) weighted graph.
  * @author boaz.benmoshe
  */
-public interface NodeData {
+public interface NodeData  {
 	/**
 	 * Returns the key (id) associated with this node.
 	 * @return
