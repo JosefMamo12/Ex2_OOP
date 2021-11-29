@@ -21,7 +21,6 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
     @Override
     public void init(DirectedWeightedGraph g) {
         this.g = g;
-        parent = new int[g.nodeSize()];
 
     }
 
@@ -95,14 +94,21 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
     }
 
     private void clean() {
-        Arrays.fill(parent, 0);
-//        Arrays.fill(colors, 0);
+        Arrays.fill(parent, -1);
+        Iterator<NodeData> ndItr = g.nodeIter();
+        while(ndItr.hasNext())
+         {
+             NodeData curr =ndItr.next();
+             curr.setWeight(inf);
+             curr.setInfo("NotVisited");
+        }
     }
 
     @Override
     public double shortestPathDist(int src, int dest) {
         if (g != null && g.nodes.containsKey(src) && g.nodes.containsKey(dest)) {
-            boolean[] visited = new boolean[g.nodeSize()];
+            parent = new int[g.nodeSize()];
+            clean();
             g.getNode(src).setWeight(0);
             PriorityQueue<NodeData> pq = new PriorityQueue<>();
             pq.add(g.getNode(src));
@@ -111,7 +117,7 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
                 Iterator<EdgeData> itr = g.edgeIter(currNode.getKey());
                 while (itr.hasNext()) {
                     EdgeData e = itr.next();
-                    if (!visited[e.getDest()]) {
+                    if (!g.getNode(e.getDest()).getInfo().equals("Visited")) {
                         NodeData neighbour = g.getNode(e.getDest());
                         double weight = currNode.getWeight() + e.getWeight();
                         if (weight < neighbour.getWeight()) {
@@ -121,7 +127,7 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
                         }
                     }
                 }
-                visited[currNode.getKey()] = true;
+                currNode.setInfo("Visited");
             }
             if (g.getNode(dest).getWeight() != inf)
                 return g.getNode(dest).getWeight();
@@ -146,6 +152,37 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
 
     @Override
     public NodeData center() {
+        if(isConnected()){
+            int totalSize = g.nodeSize();
+            List<Integer> leaves = new ArrayList<>();
+            int [] vertex_degree = new int[g.nodeSize()];
+            for (Map.Entry<Integer, HashMap<Integer, EdgeData>> entry : g.graph.entrySet()) {
+                Integer entryKey = entry.getKey();
+                vertex_degree[entryKey] = g.graph.get(entryKey).size(); //fill the degrees of all nodes
+            }
+            for (int node = 0 ; node < vertex_degree.length; node++) {
+                if (vertex_degree[node] == 1) { // means that node is leaf
+                    leaves.add(node);
+                    vertex_degree[node] = 0;
+                }
+                int leaveSize = leaves.size();
+                while (totalSize > leaveSize){
+                    List<Integer> future = new ArrayList<>();
+                    for (Integer n: leaves) {
+                        Iterator<EdgeData> edItr = g.edgeIter(n);
+                        while(edItr.hasNext()){
+                            EdgeData ed = edItr.next();
+                            if(--vertex_degree[ed.getDest()] == 1)
+                                future.add(ed.getDest());
+                        }
+                        vertex_degree[n] = 0;
+                    }
+                    leaveSize += future.size();
+                    leaves = future;
+                }
+            }
+            return g.getNode(leaves.get(0));
+        }
         return null;
     }
 

@@ -109,31 +109,32 @@ class DirectedWeightedGraphAlgorithmsTest {
 
     @Test
     void shortestPath() {
-        g = graphCreator(13);
-        g.connect(0,1,3);
-        g.connect(1,2,2);
-        g.connect(2,3,1);
-        g.connect(3,5,1);
-        g.connect(1,5,8);
-        g.connect(5,1,8);
-        g.connect(5,10,6);
-        g.connect(0,10,1);
-        g.connect(10,12,10);
-        g.connect(12,6,2);
-        g.connect(6,9,12);
-        g.connect(9,6,12);
-        g.connect(3,9,20);
-        g.connect(11,9,10);
-        g.connect(12,11,5);
-        g.connect(11,8,3);
-        g.connect(8,3,4);
+//        g = graphCreator(13);
+//        g.connect(0,1,3);
+//        g.connect(1,2,2);
+//        g.connect(2,3,1);
+//        g.connect(3,5,1);
+//        g.connect(1,5,8);
+//        g.connect(5,1,8);
+//        g.connect(5,10,6);
+//        g.connect(0,10,1);
+//        g.connect(10,12,10);
+//        g.connect(12,6,2);
+//        g.connect(6,9,12);
+//        g.connect(9,6,12);
+//        g.connect(3,9,20);
+//        g.connect(11,9,10);
+//        g.connect(12,11,5);
+//        g.connect(11,8,3);
+//        g.connect(8,3,4);
         DirectedWeightedGraphAlgorithms dwa = new DirectedWeightedGraphAlgorithms();
         dwa.init(g);
+        dwa.load("Assignments/Ex2/data/G1.json");
         List<NodeData> lnd = dwa.shortestPath(0,9);
         for (NodeData nodeData : lnd) {
-            System.out.print(nodeData.getKey() + "->");
+            System.out.print( "->" + nodeData.getKey() );
         }
-        System.out.println("null");
+        System.out.println();
 //        assertEquals(d, 7);
     }
 
