@@ -1,13 +1,10 @@
 package src.classes;
 
 import com.google.gson.*;
-import com.google.gson.stream.JsonWriter;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import com.google.gson.*;
-import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -44,8 +41,10 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
             EdgeData edge = edgeIt.next();
             copy.edges.add(new EdgeData(edge));
         }
+
         for (Map.Entry<Integer, HashMap<Integer, EdgeData>> entry : g.graph.entrySet()) {
             Integer entryKey = entry.getKey();
+            copy.edgeIn.put(entryKey,new HashSet<>());
             copy.graph.put(entryKey, new HashMap<>());
             for (Map.Entry<Integer, EdgeData> innerEntry : entry.getValue().entrySet()) {
                 Integer innerKey = innerEntry.getKey();
@@ -53,7 +52,6 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
                 copy.graph.get(entryKey).put(innerKey, new EdgeData(innerEdge));
             }
         }
-        copy.mc = this.g.mc;
         return copy;
     }
 
@@ -62,27 +60,48 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
     public boolean isConnected() {
         if (g == null)
             return true;
+
         boolean[] visited = new boolean[g.nodeSize()];
-        for (Map.Entry<Integer, HashMap<Integer, EdgeData>> entry : g.graph.entrySet()) {
-            Integer entryKey = entry.getKey();
-            DFS(entryKey, visited);
+        int entryKey = g.getNode(0).getKey();
+        DirectedWeightedGraph gTrans = graphTranspose();
+        for (int i = 0; i < 2; i++) {
+            if (i == 0) {
+                DFS(this.g, entryKey, visited);
+            }
+            if (i == 1) {
+                DFS(gTrans, entryKey, visited);
+            }
             for (boolean b : visited) {
                 if (!b)
                     return false;
-
             }
             Arrays.fill(visited, false);
         }
         return true;
     }
 
-    private void DFS(@NotNull Integer entryKey, boolean[] visited) {
+    private DirectedWeightedGraph graphTranspose() {
+        DirectedWeightedGraph ans = new DirectedWeightedGraph();
+        Iterator<NodeData> nItr = g.nodeIter();
+        while (nItr.hasNext()) {
+            NodeData curr = nItr.next();
+            ans.addNode(new NodeData(curr));
+        }
+        Iterator<EdgeData> eItr = g.edgeIter();
+        while (eItr.hasNext()) {
+            EdgeData e = eItr.next();
+            ans.connect(e.getDest(), e.getSrc(), e.getWeight());
+        }
+        return ans;
+    }
+
+    private void DFS(@NotNull DirectedWeightedGraph gr, Integer entryKey, boolean[] visited) {
         Stack<Integer> st = new Stack<>();
         visited[entryKey] = true;
         st.add(entryKey);
         while (!st.isEmpty()) {
             int node = st.pop();
-            Iterator<EdgeData> itr = g.edgeIter(node);
+            Iterator<EdgeData> itr = gr.edgeIter(node);
             while (itr.hasNext()) {
                 EdgeData e = itr.next();
                 if (!visited[e.getDest()]) {
@@ -96,39 +115,42 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
     private void clean() {
         Arrays.fill(parent, -1);
         Iterator<NodeData> ndItr = g.nodeIter();
-        while(ndItr.hasNext())
-         {
-             NodeData curr =ndItr.next();
-             curr.setWeight(inf);
-             curr.setInfo("NotVisited");
+        while (ndItr.hasNext()) {
+            NodeData curr = ndItr.next();
+            curr.setWeight(inf);
+            curr.setTag(0);
+        }
+    }
+
+    public void DIJKSTRA(int src) {
+        parent = new int[g.nodeSize()];
+        clean();
+        g.getNode(src).setWeight(0);
+        PriorityQueue<NodeData> pq = new PriorityQueue<>();
+        pq.add(g.getNode(src));
+        while (!pq.isEmpty()) {
+            NodeData currNode = pq.poll();
+            Iterator<EdgeData> itr = g.edgeIter(currNode.getKey());
+            while (itr.hasNext()) {
+                EdgeData e = itr.next();
+                if (g.getNode(e.getDest()).getTag() == 0) {
+                    NodeData neighbour = g.getNode(e.getDest());
+                    double weight = currNode.getWeight() + e.getWeight();
+                    if (weight < neighbour.getWeight()) {
+                        neighbour.setWeight(weight);
+                        parent[neighbour.getKey()] = currNode.getKey();
+                        pq.add(neighbour);
+                    }
+                }
+            }
+            currNode.setTag(1);
         }
     }
 
     @Override
     public double shortestPathDist(int src, int dest) {
-        if (g != null && g.nodes.containsKey(src) && g.nodes.containsKey(dest)) {
-            parent = new int[g.nodeSize()];
-            clean();
-            g.getNode(src).setWeight(0);
-            PriorityQueue<NodeData> pq = new PriorityQueue<>();
-            pq.add(g.getNode(src));
-            while (!pq.isEmpty()) {
-                NodeData currNode = pq.poll();
-                Iterator<EdgeData> itr = g.edgeIter(currNode.getKey());
-                while (itr.hasNext()) {
-                    EdgeData e = itr.next();
-                    if (!g.getNode(e.getDest()).getInfo().equals("Visited")) {
-                        NodeData neighbour = g.getNode(e.getDest());
-                        double weight = currNode.getWeight() + e.getWeight();
-                        if (weight < neighbour.getWeight()) {
-                            neighbour.setWeight(weight);
-                            parent[neighbour.getKey()] = currNode.getKey();
-                            pq.add(neighbour);
-                        }
-                    }
-                }
-                currNode.setInfo("Visited");
-            }
+        if (src != dest && g != null && g.nodes.containsKey(src) && g.nodes.containsKey(dest)) {
+            DIJKSTRA(src);
             if (g.getNode(dest).getWeight() != inf)
                 return g.getNode(dest).getWeight();
         }
@@ -137,9 +159,9 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
 
     @Override
     public List<NodeData> shortestPath(int src, int dest) {
-        if(shortestPathDist(src,dest) != -1){
+        if (shortestPathDist(src, dest) != -1) {
             List<NodeData> lst = new LinkedList<>();
-            while (src != dest){
+            while (src != dest) {
                 lst.add(g.getNode(dest));
                 dest = parent[dest];
             }
@@ -152,36 +174,28 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
 
     @Override
     public NodeData center() {
-        if(isConnected()){
-            int totalSize = g.nodeSize();
-            List<Integer> leaves = new ArrayList<>();
-            int [] vertex_degree = new int[g.nodeSize()];
-            for (Map.Entry<Integer, HashMap<Integer, EdgeData>> entry : g.graph.entrySet()) {
-                Integer entryKey = entry.getKey();
-                vertex_degree[entryKey] = g.graph.get(entryKey).size(); //fill the degrees of all nodes
-            }
-            for (int node = 0 ; node < vertex_degree.length; node++) {
-                if (vertex_degree[node] == 1) { // means that node is leaf
-                    leaves.add(node);
-                    vertex_degree[node] = 0;
+        NodeData centerNode = null;
+        if (isConnected()) {
+            double[] distance = new double[g.nodeSize()];
+            double sum = 0;
+            for (int i = 0; i < g.nodeSize(); i++) {
+                sum = 0;
+                DIJKSTRA(i);
+                Iterator<NodeData> nodeDataIterator = g.nodeIter();
+                while (nodeDataIterator.hasNext()) {
+                    NodeData curr = nodeDataIterator.next();
+                    sum += curr.getWeight();
                 }
-                int leaveSize = leaves.size();
-                while (totalSize > leaveSize){
-                    List<Integer> future = new ArrayList<>();
-                    for (Integer n: leaves) {
-                        Iterator<EdgeData> edItr = g.edgeIter(n);
-                        while(edItr.hasNext()){
-                            EdgeData ed = edItr.next();
-                            if(--vertex_degree[ed.getDest()] == 1)
-                                future.add(ed.getDest());
-                        }
-                        vertex_degree[n] = 0;
-                    }
-                    leaveSize += future.size();
-                    leaves = future;
+                distance[i] = sum;
+            }
+            sum = inf;
+            for (int i = 0; i < distance.length; i++) {
+                if (distance[i] < sum) {
+                    sum = distance[i];
+                    centerNode = g.getNode(i);
                 }
             }
-            return g.getNode(leaves.get(0));
+            return centerNode;
         }
         return null;
     }
@@ -200,7 +214,6 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
             node.put("pos", nd.getLocation().toString());
             jaN.add(node);
             for (Map.Entry<Integer, EdgeData> innerEntry : entry.getValue().entrySet()) {
-                Integer innerKey = innerEntry.getKey();
                 EdgeData innerEdge = innerEntry.getValue();
                 JSONObject edge = new JSONObject();
                 edge.put("src", innerEdge.getSrc());
@@ -228,6 +241,7 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
 
     @Override
     public boolean load(String file) {
+        System.out.println("In load");
         JsonParser jsonParser = new JsonParser();
         try (FileReader reader = new FileReader(file)) {
             Object obj = jsonParser.parse(reader);
@@ -261,7 +275,6 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
             this.g.connect(src, dest, weight);
         }
     }
-
 
     @Override
     public List<NodeData> tsp(List<NodeData> cities) {

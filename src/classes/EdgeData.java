@@ -67,6 +67,15 @@ public class EdgeData implements api.EdgeData {
     }
 
     @Override
+    public String toString() {
+        return "EdgeData{" +
+                "src=" + src +
+                ", dest=" + dest +
+                ", weight=" + weight +
+                '}';
+    }
+
+    @Override
     public int hashCode() {
         return Objects.hash(src, dest, weight, tag, info);
     }

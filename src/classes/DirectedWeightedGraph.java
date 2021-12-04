@@ -2,25 +2,39 @@ package src.classes;
 
 import org.w3c.dom.Node;
 
+import javax.swing.*;
 import java.util.*;
 
 
-public class DirectedWeightedGraph implements api.DirectedWeightedGraph {
+public class DirectedWeightedGraph implements api.DirectedWeightedGraph{
     HashMap<Integer, NodeData> nodes;
     Vector<EdgeData> edges;
+    HashMap<Integer, HashSet<Integer>> edgeIn;
     HashMap<Integer, HashMap<Integer, EdgeData>> graph;
-    int mc;
+    private int mc;
 
+    public HashMap<Integer, NodeData> getNodes() {
+        return nodes;
+    }
+
+    public Vector<EdgeData> getEdges() {
+        return edges;
+    }
+
+    public HashMap<Integer, HashMap<Integer, EdgeData>> getGraph() {
+        return graph;
+    }
 
     @Override
     public int hashCode() {
         return Objects.hash(nodes, edges, graph, mc);
     }
 
-    public DirectedWeightedGraph(){
+    public DirectedWeightedGraph() {
         this.nodes = new HashMap<>();
         this.edges = new Vector<>();
         this.graph = new HashMap<>();
+        this.edgeIn = new HashMap<>();
         this.mc = 0;
     }
 
@@ -41,19 +55,25 @@ public class DirectedWeightedGraph implements api.DirectedWeightedGraph {
     @Override
     public void addNode(NodeData n) {
         if (!this.nodes.containsKey(n.getKey())) {
-            this.nodes.put(n.getKey(),n);
-            this.graph.put(n.getKey(),new HashMap<>());
+            this.nodes.put(n.getKey(), n);
+            this.graph.put(n.getKey(), new HashMap<>());
+            this.edgeIn.put(n.getKey(), new HashSet<>());
             this.mc++;
         }
     }
 
     @Override
     public void connect(int src, int dest, double w) {
-        if (src != dest && this.nodes.containsKey(src) && this.nodes.containsKey(dest) && !this.graph.get(src).containsKey(dest)) {
+        if (src != dest && this.nodes.containsKey(src) && this.nodes.containsKey(dest) && w > 0) {
+            if (graph.get(src).containsKey(dest))
+                removeEdge(src, dest);
             EdgeData e = new EdgeData(src, dest, w);
             this.edges.add(e);
             this.graph.get(src).put(dest, e);
+            this.edgeIn.get(dest).add(src);
             this.mc++;
+        } else {
+            throw new IllegalArgumentException("ERROR: illegal argument src,dest,w");
         }
     }
 
@@ -62,27 +82,28 @@ public class DirectedWeightedGraph implements api.DirectedWeightedGraph {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DirectedWeightedGraph that = (DirectedWeightedGraph) o;
-        if (nodes.size() != that.nodeSize() && edges.size() != that.edgeSize() && graph.size() != that.graph.size() && mc != that.mc) return false;
-        for (int i = 0; i <nodeSize() ; i++) {
+        if (nodes.size() != that.nodeSize() && edges.size() != that.edgeSize() && graph.size() != that.graph.size() && mc != that.mc)
+            return false;
+        for (int i = 0; i < nodeSize(); i++) {
             if (!nodes.get(i).equals(that.nodes.get(i)))
                 return false;
         }
-        for (int i = 0; i < edgeSize() ; i++) {
-            if(!edges.get(i).equals(that.edges.get(i)))
+        for (int i = 0; i < edgeSize(); i++) {
+            if (!edges.get(i).equals(that.edges.get(i)))
                 return false;
         }
         Iterator<Map.Entry<Integer, HashMap<Integer, EdgeData>>> itr1 = graph.entrySet().iterator();
         Iterator<Map.Entry<Integer, HashMap<Integer, EdgeData>>> itr2 = that.graph.entrySet().iterator();
-        while(itr1.hasNext() || itr2.hasNext()){
-            Map.Entry<Integer,HashMap<Integer,EdgeData>> e1 = itr1.next();
-            Map.Entry<Integer,HashMap<Integer,EdgeData>> e2 = itr2.next();
+        while (itr1.hasNext() || itr2.hasNext()) {
+            Map.Entry<Integer, HashMap<Integer, EdgeData>> e1 = itr1.next();
+            Map.Entry<Integer, HashMap<Integer, EdgeData>> e2 = itr2.next();
             int key1 = e1.getKey();
             int key2 = e2.getKey();
             if (key1 != key2) return false;
             Iterator<EdgeData> eItr1 = edgeIter(key1);
             Iterator<EdgeData> eItr2 = edgeIter(key2);
-            while(eItr1.hasNext() || eItr2.hasNext()){
-                if(!eItr1.next().equals(eItr2.next()))return false;
+            while (eItr1.hasNext() || eItr2.hasNext()) {
+                if (!eItr1.next().equals(eItr2.next())) return false;
             }
         }
         return true;
@@ -95,7 +116,7 @@ public class DirectedWeightedGraph implements api.DirectedWeightedGraph {
 
     @Override
     public Iterator<EdgeData> edgeIter() {
-       return edges.iterator();
+        return edges.iterator();
     }
 
     @Override
@@ -105,18 +126,28 @@ public class DirectedWeightedGraph implements api.DirectedWeightedGraph {
 
     @Override
     public NodeData removeNode(int key) {
-        if(this.nodes.containsKey(key)){
+        if (this.nodes.containsKey(key)) {
             Iterator<EdgeData> it = edgeIter(key);
-            while (it.hasNext()){
+            while (it.hasNext()) {
                 EdgeData e = it.next();
                 it.remove();
-                removeEdge(e.getSrc(),e.getDest());
-                if(this.nodes.containsKey(e.getDest()) && this.graph.get(e.getDest()).containsKey(e.getSrc()))
+                edges.remove(e);
+                edgeIn.get(e.getDest()).remove(e.getSrc());
+                if(graph.get(e.getDest()).containsKey(e.getSrc()))
                     removeEdge(e.getDest(),e.getSrc());
+
+            }
+            Iterator<Integer> edgeInItr = edgeIn.get(key).iterator();
+            while (edgeInItr.hasNext()) {
+                Integer keyToDelete = edgeInItr.next();
+                edgeInItr.remove();
+                removeEdge(keyToDelete, key);
+
             }
             NodeData node = this.getNode(key);
             this.nodes.remove(key);
             this.graph.remove(key);
+            this.edgeIn.remove(key);
             mc++;
             return node;
         }
@@ -126,12 +157,13 @@ public class DirectedWeightedGraph implements api.DirectedWeightedGraph {
     @Override
     public EdgeData removeEdge(int src, int dest) {
         EdgeData e = null;
-        if(src != dest && this.nodes.containsKey(src) && this.nodes.containsKey(dest) && this.graph.get(src).containsKey(dest)) {
+        if (src != dest && this.nodes.containsKey(src) && this.nodes.containsKey(dest) && this.graph.get(src).containsKey(dest)) {
             e = this.graph.get(src).get(dest);
             this.edges.remove(e);
             this.graph.get(src).remove(dest);
-            mc++;
-        }
+            edgeIn.get(e.getDest()).remove(e.getSrc());
+
+            mc++;        }
         return e;
     }
 
@@ -142,9 +174,8 @@ public class DirectedWeightedGraph implements api.DirectedWeightedGraph {
 
     @Override
     public int edgeSize() {
-            return edges.size();
-
-        }
+        return edges.size();
+    }
 
     @Override
     public int getMC() {

@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 public class NodeData implements src.api.NodeData, Comparable<NodeData> {
-    private int key;
+    private final int key;
     private GeoLocation location;
     private double weight;
     private String info;
