@@ -22,25 +22,6 @@ public class Point3D implements api.GeoLocation, Serializable {
         _z = z;
     }
 
-    public Point3D(Point3D p) {
-        this(p.x(), p.y(), p.z());
-    }
-
-    public Point3D(double x, double y) {
-        this(x, y, 0);
-    }
-
-    public Point3D(String s) {
-        try {
-            String[] a = s.split(",");
-            _x = Double.parseDouble(a[0]);
-            _y = Double.parseDouble(a[1]);
-            _z = Double.parseDouble(a[2]);
-        } catch (IllegalArgumentException e) {
-            System.err.println("ERR: got wrong format string for POint3D init, got:" + s + "  should be of format: x,y,x");
-            throw (e);
-        }
-    }
 
     @Override
     public double x() {
@@ -69,22 +50,6 @@ public class Point3D implements api.GeoLocation, Serializable {
         double dz = this.z() - p2.z();
         double t = (dx * dx + dy * dy + dz * dz);
         return Math.sqrt(t);
-    }
-
-    public boolean equals(Object p) {
-        if (!(p instanceof GeoLocation)) {
-            return false;
-        }
-        Point3D p2 = (Point3D) p;
-        return ((_x == p2._x) && (_y == p2._y) && (_z == p2._z));
-    }
-
-    public boolean close2equals(GeoLocation p2) {
-        return (this.distance(p2) < EPS);
-    }
-
-    public boolean equalsXY(Point3D p) {
-        return p._x == _x && p._y == _y;
     }
 
     public String toString(boolean all) {

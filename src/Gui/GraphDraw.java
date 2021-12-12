@@ -17,6 +17,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+/**
+ * Represnation of the graph using java swing.
+ */
 public class GraphDraw extends JPanel {
     DirectedWeightedGraphAlgorithms dwg;
     DirectedWeightedGraph graph;
@@ -38,7 +41,6 @@ public class GraphDraw extends JPanel {
         Graphics2D g2d = (Graphics2D) g.create();
         paintBackground(g2d);
         drawGraph(g2d);
-        //     repaint();
     }
 
     private void drawGraph(Graphics2D g2d) {
@@ -56,22 +58,23 @@ public class GraphDraw extends JPanel {
     }
 
     private void drawEdge(Graphics2D g2d, EdgeData edge) {
+        boolean flag = edge.getInfo().equals("ToPaint");
         GeoLocation s = (GeoLocation) graph.getNodes().get(edge.getSrc()).getLocation();
         GeoLocation d = (GeoLocation) graph.getNodes().get(edge.getDest()).getLocation();
         Point3D sP = (Point3D) range.world2frame(s);
         Point3D dP = (Point3D) range.world2frame(d);
-        if(!edge.getInfo().equals("ToPaint"))
-        g2d.setColor(new Color(173, 122, 68));
+        if (!flag)
+            g2d.setColor(new Color(173, 122, 68));
         else {
             g2d.setColor(new Color(100, 90, 255));
             g2d.setStroke(new BasicStroke(3));
         }
-//        g2d.drawLine((int)sP.x(),(int) sP.y(),(int)dP.x(),(int) dP.y());
-        drawArrow(g2d, (int) sP.x(), (int) sP.y(), (int) dP.x(), (int) dP.y());
+
+        drawArrow(g2d, (int) sP.x(), (int) sP.y(), (int) dP.x(), (int) dP.y(), flag);
 
     }
 
-    private void drawArrow(Graphics2D g2d, int x1, int y1, int x2, int y2) {
+    private void drawArrow(Graphics2D g2d, int x1, int y1, int x2, int y2, boolean flag) {
         Graphics2D g = (Graphics2D) g2d.create();
         double dx = x2 - x1, dy = y2 - y1;
         double angle = Math.atan2(dy, dx);
@@ -80,9 +83,11 @@ public class GraphDraw extends JPanel {
         at.concatenate(AffineTransform.getRotateInstance(angle));
         g.transform(at);
         int ARR_SIZE = 7;
-        g.setStroke(new BasicStroke(2));
+        if (!flag)
+            g.setStroke(new BasicStroke(2));
+        else
+            g.setStroke(new BasicStroke(4));
         g.drawLine(0, 0, len, 0);
-        // Draw horizontal arrow starting in (0, 0)
         g.fillPolygon(new int[]{len - 10, len - ARR_SIZE - 20, len - ARR_SIZE - 10, len - 20}, new int[]{0, -ARR_SIZE, ARR_SIZE, 0}, 3);
     }
 
@@ -105,8 +110,8 @@ public class GraphDraw extends JPanel {
     }
 
     private void resize() {
-        Range rx = new Range(120, this.getWidth() - 120);
-        Range ry = new Range(this.getHeight() - 70, 170);
+        Range rx = new Range(35, this.getWidth() - 30);
+        Range ry = new Range(this.getHeight() - 20, 45);
         Range2D frame = new Range2D(rx, ry);
         range = new Range2Range(graphRange(), frame);
     }

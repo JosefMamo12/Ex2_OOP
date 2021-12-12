@@ -1,4 +1,9 @@
 package Util;
+/**
+ * This class represents a simple world 2 frame conversion (both ways).
+ * @author boaz.benmoshe
+ *
+ */
 
 import api.GeoLocation;
 

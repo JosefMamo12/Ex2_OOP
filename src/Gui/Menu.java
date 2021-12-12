@@ -12,6 +12,16 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+
+/**
+ * This class is the menu of the algorithms which sit on the panel at the right side of the screen.
+ */
 
 public class Menu extends JPanel implements ActionListener {
     DirectedWeightedGraphAlgorithms dwg = new DirectedWeightedGraphAlgorithms();
@@ -24,7 +34,7 @@ public class Menu extends JPanel implements ActionListener {
     JButton shortestPathDist;
     JButton center;
 
-    final int PANEL_WIDTH = 225 , PANEL_HEIGHT = 700;
+    final int PANEL_WIDTH = 225, PANEL_HEIGHT = 700;
     static BufferedImage menuBackGround = null;
 
     public Menu(api.DirectedWeightedGraphAlgorithms algo, GraphDraw gd) {
@@ -51,6 +61,8 @@ public class Menu extends JPanel implements ActionListener {
         shortestPathDist.addActionListener(this);
         shortestPath.addActionListener(this);
         center.addActionListener(this);
+        tsp.addActionListener(this);
+
         this.setPreferredSize(new Dimension(PANEL_WIDTH, PANEL_HEIGHT));
 
         try {
@@ -59,12 +71,14 @@ public class Menu extends JPanel implements ActionListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         this.add(label);
         this.add(connected);
         this.add(tsp);
         this.add(shortestPath);
         this.add(shortestPathDist);
         this.add(center);
+
 
     }
 
@@ -82,9 +96,11 @@ public class Menu extends JPanel implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         JFrame f = new JFrame();
-        f.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        JDialog d = new JDialog(f, "isConnected?", true);
-        d.setBounds(300, 150, 200, 100);
+        ImageIcon backgroundImage = null;
+        JDialog d = new JDialog(f, "Is Connected?");
+        d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        d.setBounds(200, 130, 250, 150);
+        javax.swing.Timer timer = new Timer(2000, (a) -> d.dispose());
         if (e.getSource() == connected) {
             if (dwg.isConnected()) {
                 JLabel lb = new JLabel("The Graph is connected");
@@ -93,12 +109,12 @@ public class Menu extends JPanel implements ActionListener {
             } else {
                 d.add(new JLabel("The graph is not connected"));
             }
+            timer.start();
             d.setVisible(true);
-            f.remove(d);
         }
         if (e.getSource() == shortestPathDist) {
             int src = -1, dest = -1;
-            DirectedWeightedGraph testingGraph = dwg.copy();
+            DirectedWeightedGraph testingGraph = dwg.getGraph();
             int size = testingGraph.nodeSize();
             while (true) {
                 System.out.println(testingGraph.nodeSize());
@@ -106,7 +122,7 @@ public class Menu extends JPanel implements ActionListener {
                 src = Integer.parseInt(sourceUserResponse);
                 String destUserResponse = JOptionPane.showInputDialog(f, "Please type in the destination node", "Destination");
                 dest = Integer.parseInt(destUserResponse);
-                if (src >= 0 && src < size && dest >= 0 && dest < size) {
+                if (testingGraph.contains(src) && testingGraph.contains(dest)) {
                     break;
                 } else
                     JOptionPane.showMessageDialog(f, "Wrong inputs please try again", JOptionPane.INPUT_VALUE_PROPERTY, 0);
@@ -120,26 +136,26 @@ public class Menu extends JPanel implements ActionListener {
         }
         if (e.getSource() == shortestPath) {
             int src = -1, dest = -1;
-            DirectedWeightedGraph testingGraph = dwg.copy();
+            DirectedWeightedGraph testingGraph = dwg.getGraph();
             int size = testingGraph.nodeSize();
             while (true) {
                 String sourceUserResponse = JOptionPane.showInputDialog(f, "Please type in the source node", "Source");
                 src = Integer.parseInt(sourceUserResponse);
                 String destUserResponse = JOptionPane.showInputDialog(f, "Please type in the destination node", "Destination");
                 dest = Integer.parseInt(destUserResponse);
-                if (src >= 0 && src < size && dest >= 0 && dest < size) {
+                if (testingGraph.contains(src) && testingGraph.contains(dest)) {
                     break;
                 } else
                     JOptionPane.showMessageDialog(f, "Wrong inputs please try again", JOptionPane.INPUT_VALUE_PROPERTY, 0);
             }
             StringBuilder ans = new StringBuilder("Starting Node");
-            for (NodeData n: dwg.shortestPath(src,dest)) {
+            for (NodeData n : dwg.shortestPath(src, dest)) {
                 ans.append("->").append(n.getKey());
             }
             ans.append("<-Ending Node");
             gd.repaint();
-            JOptionPane.showMessageDialog(f,ans,"Path",JOptionPane.PLAIN_MESSAGE);
-            }
+            JOptionPane.showMessageDialog(f, ans, "Path", JOptionPane.PLAIN_MESSAGE);
+        }
 
 
         if (e.getSource() == center) {
@@ -147,9 +163,61 @@ public class Menu extends JPanel implements ActionListener {
             gd.repaint();
 
         }
+        if (e.getSource() == tsp) {
+            DirectedWeightedGraph testingGraph = dwg.getGraph();
+            List<NodeData> lst = new LinkedList<>();
+            int counter = 0;
+            while (true) {
+                int num = Integer.parseInt(JOptionPane.showInputDialog(f, "Please enter travel node (-1 to stop adding)", "TSP", JOptionPane.QUESTION_MESSAGE));
+                if (lst.size() == 0 && testingGraph.contains(num)) {
+                    lst.add(new NodeData(testingGraph.getNode(num)));
+                    counter++;
+                } else if (lst != null && !lst.contains(testingGraph.getNode(num)) && testingGraph.contains(num) && counter < testingGraph.nodeSize()) {
+                    lst.add(new NodeData(testingGraph.getNode(num)));
+                    counter++;
+                } else if (counter == testingGraph.nodeSize()) {
+                    JOptionPane.showMessageDialog(f, "You reach to limit nodes in the graph");
+                    break;
+                } else if (num == -1) {
+                    break;
+                } else {
+                    JOptionPane.showMessageDialog(f, "Worng input!!! please try again");
+                }
 
+            }
+            if (dwg.tsp(lst) == null) {
+                JOptionPane.showMessageDialog(f, "Returned null means there is no possible path between this relative nodes.");
+            } else {
+                List<NodeData> lst1 = dwg.tsp(lst);
+                dwg.clean();
+                StringBuilder ans = new StringBuilder("Starting Node");
+                int src = -1, dest = -1;
+                counter = 0;
+                for (NodeData n : lst1) {
+                    ans.append("->").append(n.getKey());
+                    testingGraph.getNode(n.getKey()).setInfo("Path");
+                    if (counter == 0)
+                        src = n.getKey();
+                    else if (counter == 1) {
+                        dest = n.getKey();
+                        testingGraph.getEdge(src, dest).setInfo("ToPaint");
+                    } else {
+                        src = dest;
+                        dest = n.getKey();
+                        testingGraph.getEdge(src, dest).setInfo("ToPaint");
+                    }
+                    counter++;
+                }
+                ans.append("<-Ending Node");
+                gd.repaint();
+                JOptionPane.showMessageDialog(f, ans, "Path", JOptionPane.PLAIN_MESSAGE);
+            }
+
+        }
     }
 }
+
+
 
 
 

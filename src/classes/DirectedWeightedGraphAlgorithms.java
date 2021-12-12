@@ -3,29 +3,46 @@ package classes;
 import com.google.gson.*;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.w3c.dom.Node;
+
 
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * This class represnating a bunch of algorithms which need to work on
+ * the DirectedWeightedGraph object.
+ */
 public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGraphAlgorithms {
     private DirectedWeightedGraph g;
-    private int[] parent;
+    private HashMap<Integer, Integer> parent;
     final double inf = Double.MAX_VALUE;
 
-
-
+    /**
+     * Init a directedWeightedGraph object which this algortihm class  will work on.
+     * @param g
+     */
     @Override
     public void init(api.DirectedWeightedGraph g) {
         this.g = (DirectedWeightedGraph) g;
     }
 
+    /**
+     * Return the specific graph.
+     * @return
+     */
     @Override
     public DirectedWeightedGraph getGraph() {
         return this.g;
     }
 
+    /**
+     * Create a deep copy of the graph.
+     * without the mc changes.
+     * @return DirectedWeightedGraph
+     */
     @Override
     public DirectedWeightedGraph copy() {
         if (g == null)
@@ -37,7 +54,7 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
             copy.addNode(node);
         }
 
-        for (Map.Entry<Integer, HashMap<Integer, EdgeData>> entry : g.graph.entrySet()) {
+        for (Map.Entry<Integer, HashMap<Integer, EdgeData>> entry : g.getGraph().entrySet()) {
             Integer entryKey = entry.getKey();
             for (Map.Entry<Integer, EdgeData> innerEntry : entry.getValue().entrySet()) {
                 EdgeData e = innerEntry.getValue();
@@ -47,14 +64,21 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
         return copy;
     }
 
-
+    /**
+     * Graph is called connected if and only if there is path between u and v which u and v are vertex in the graph.
+     * Did it with the help of dfs algorithm which go over all the graph and see it there is a path between a source code
+     * to all other nodes in the graph.
+     * Also transposed the graph to save the amount of time by using the dfs algorithm to each node.
+     * @return
+     */
     @Override
     public boolean isConnected() {
         if (g == null)
             return true;
 
-        boolean[] visited = new boolean[g.nodeSize()];
-        int entryKey = g.getNode(0).getKey();
+        HashMap<Integer, Boolean> visited = new HashMap<>();
+        fillHashFalse(visited);
+        int entryKey = g.getGraph().entrySet().iterator().next().getKey();
         DirectedWeightedGraph gTrans = graphTranspose();
         for (int i = 0; i < 2; i++) {
             if (i == 0) {
@@ -63,15 +87,33 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
             if (i == 1) {
                 DFS(gTrans, entryKey, visited);
             }
-            for (boolean b : visited) {
-                if (!b)
+            for (Boolean value : visited.values()) {
+                if (value == false)
                     return false;
             }
-            Arrays.fill(visited, false);
+            fillHashFalse(visited);
         }
         return true;
     }
 
+    /**
+     * Helper to dfs.
+     * @param visited
+     */
+    private void fillHashFalse(HashMap<Integer, Boolean> visited) {
+        Iterator<NodeData> nItr = g.nodeIter();
+        while (nItr.hasNext()) {
+            NodeData n = nItr.next();
+            visited.put(n.getKey(), false);
+        }
+    }
+
+    /**
+     * Helper to is connected graph,
+     * return new transposed graph,
+     * by opposited all the edges direction.
+     * @return
+     */
     private DirectedWeightedGraph graphTranspose() {
         DirectedWeightedGraph ans = new DirectedWeightedGraph();
         Iterator<NodeData> nItr = g.nodeIter();
@@ -88,23 +130,25 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
     }
 
     /**
-     * DFS Algorithm for returning if the graph is fully Connected
-     *
+     * Helper to isConnected function.
+     * getting a soruce node id and and iterate over all his neighbors nood add it to stack and after that
+     * it iterating over the neighbors of the neighbor and reach to the all nodes that related to the source Tying
+     * element.
      * @param gr
      * @param entryKey
      * @param visited
      */
-    private void DFS(DirectedWeightedGraph gr, Integer entryKey, boolean[] visited) {
+    private void DFS(DirectedWeightedGraph gr, int entryKey, HashMap<Integer, Boolean> visited) {
         Stack<Integer> st = new Stack<>();
-        visited[entryKey] = true;
+        visited.put(entryKey, true);
         st.add(entryKey);
         while (!st.isEmpty()) {
             int node = st.pop();
             Iterator<EdgeData> itr = gr.edgeIter(node);
             while (itr.hasNext()) {
                 EdgeData e = itr.next();
-                if (!visited[e.getDest()]) {
-                    visited[e.getDest()] = true;
+                if (!visited.get(e.getDest())) {
+                    visited.put(e.getDest(), true);
                     st.add(e.getDest());
                 }
             }
@@ -115,18 +159,19 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
      * Clean method like cleaning buffer of the graph before we do a new algorithm.
      */
     public void clean() {
-        parent = new int[g.nodeSize()];
-        Arrays.fill(parent, -1);
+        parent = new HashMap<>();
         Iterator<NodeData> ndItr = g.nodeIter();
         while (ndItr.hasNext()) {
             NodeData curr = ndItr.next();
+            parent.put(curr.getKey(), -1);
             curr.setWeight(inf);
             curr.setTag(0);
             curr.setInfo("");
         }
         Iterator<EdgeData> edgeDataIterator = g.edgeIter();
-        while(edgeDataIterator.hasNext()){
-            edgeDataIterator.next().setInfo("");
+        while (edgeDataIterator.hasNext()) {
+            EdgeData ed = edgeDataIterator.next();
+            ed.setInfo("");
         }
     }
 
@@ -134,6 +179,7 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
      * Known algorithm which given source node and it returning the
      * shortest path from the particular source node to all other nodes in the graph.
      * Time Complexity O(V + E*log*V)
+     *
      * @param src
      */
 
@@ -152,7 +198,7 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
                     double weight = currNode.getWeight() + e.getWeight();
                     if (weight < neighbour.getWeight()) {
                         neighbour.setWeight(weight);
-                        parent[neighbour.getKey()] = currNode.getKey();
+                        parent.put(neighbour.getKey(), currNode.getKey());
                         pq.add(neighbour);
                     }
                 }
@@ -161,10 +207,18 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
         }
     }
 
+    /**
+     * Return the distance between the source node to the dest node, by computing the weights thats exists on each edge
+     * thats have been contained in the path.
+     * Return -1 if there is no path.
+     * @param src  - start node
+     * @param dest - end (target) node
+     * @return
+     */
     @Override
     public double shortestPathDist(int src, int dest) {
         clean();
-        if (src != dest && g != null && g.nodes.containsKey(src) && g.nodes.containsKey(dest)) {
+        if (src != dest && g != null && g.getNodes().containsKey(src) && g.getNodes().containsKey(dest)) {
             DIJKSTRA(src);
             if (g.getNode(dest).getWeight() != inf)
                 return g.getNode(dest).getWeight();
@@ -180,9 +234,9 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
                 g.getNode(dest).setInfo("Path");
                 lst.add(g.getNode(dest));
                 int tempDest = dest;
-                int tempSrc = parent[dest];
-                this.g.getEdge(tempSrc,tempDest).setInfo("ToPaint");
-                dest = parent[dest];
+                int tempSrc = parent.get(dest);
+                this.g.getEdge(tempSrc, tempDest).setInfo("ToPaint");
+                dest = tempSrc;
             }
             g.getNode(src).setInfo("Path");
             lst.add(g.getNode(src));
@@ -192,15 +246,24 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
         return null;
     }
 
+    /**
+     * Center of a graph is the set of all vertices of minimum eccentricity,
+     * that is, the set of all vertices u where the greatest distance d(u,v) to other vertices v is minimal.
+     * used the wikipedia - https://en.wikipedia.org/wiki/Graph_center
+     * @return
+     */
     @Override
     public NodeData center() {
+        clean();
         NodeData centerNode = null;
         if (isConnected()) {
             double tempSum = inf;
             double sum;
-            for (int i = 0; i < g.nodeSize(); i++) {
+            Iterator<NodeData> nItr = g.nodeIter();
+            while (nItr.hasNext()) {
+                NodeData bestNode = nItr.next();
                 sum = Double.MIN_VALUE;
-                DIJKSTRA(i);
+                DIJKSTRA(bestNode.getKey());
                 Iterator<NodeData> nodeDataIterator = g.nodeIter();
                 while (nodeDataIterator.hasNext()) {
                     NodeData curr = nodeDataIterator.next();
@@ -211,7 +274,7 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
                 }
                 if (sum < tempSum) {
                     tempSum = sum;
-                    centerNode = g.getNode(i);
+                    centerNode = bestNode;
                 }
             }
             assert centerNode != null;
@@ -220,10 +283,20 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
         }
         return null;
     }
-    public void whenLoadClicked(){
-            g = null;
-            g = new DirectedWeightedGraph();
+
+    /**
+     * Only for reloading new G1,G2,G3.JSONS!!
+     */
+    public void whenLoadClicked() {
+        g = null;
+        g = new DirectedWeightedGraph();
     }
+
+    /**
+     * Save the DirectedWeightedGraph as json.
+     * @param file - the file name (may include a relative path).
+     * @return
+     */
 
     @SuppressWarnings("unchecked")
     @Override
@@ -231,7 +304,7 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
         JSONObject jo = new JSONObject();
         JSONArray jaE = new JSONArray();
         JSONArray jaN = new JSONArray();
-        for (Map.Entry<Integer, HashMap<Integer, EdgeData>> entry : g.graph.entrySet()) {
+        for (Map.Entry<Integer, HashMap<Integer, EdgeData>> entry : g.getGraph().entrySet()) {
             Integer entryKey = entry.getKey();
             NodeData nd = g.getNode(entryKey);
             JSONObject node = new JSONObject();
@@ -264,6 +337,11 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
         return true;
     }
 
+    /**
+     * Load a json file to DirectedWeightedGraph object.
+     * @param file - file name of JSON file
+     * @return
+     */
     @Override
     public boolean load(String file) {
         JsonParser jsonParser = new JsonParser();
@@ -299,14 +377,160 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
         }
     }
 
-    //1 > 4 >5 >3 >9 >1
+    /**
+     * This particular tsp is kind of greedy algorithm, which chose the better node to start from.
+     * In the algorithm I issolate the relative nodes and edges that related to cities.
+     * I going over leftest city (x Location) and then looking for the promsing closest node
+     * by using shortestPathDist function.
+     * The algoritm works for both sides to see if it better start from rightest side.
+     * @param cities
+     * @return
+     */
     @Override
     public List<NodeData> tsp(List<NodeData> cities) {
-        ArrayList<NodeData> path = new ArrayList<>();
-        for (int i = 0; i < cities.size() - 1; i++) {
-            path.addAll(shortestPath(cities.get(i).getKey(), cities.get(i + 1).getKey()));
+        clean();
+        if (cities == null)
+            return null;
+        if(cities.size() == 2) return shortestPath(cities.get(0).getKey(),cities.get(1).getKey());
+        DirectedWeightedGraph graphForTsp = buildGraphOnlyForCities(cities);
+        if (!this.isConnected()) return null;
+
+
+        ArrayList<NodeData> ans1 = new ArrayList<>();
+        ArrayList<NodeData> ans2 = new ArrayList<>();
+
+        List<NodeData> tempList = new ArrayList<>();
+        double shortestPathDist1 = 0;
+        double shortestPathDist2 = 0;
+
+        NodeData right = findTheRightestNode(cities);
+        NodeData left = findTheLeftestNode(cities);
+        NodeData n = null;
+        for (int i = 0; i < 2; i++) {
+            if (i == 0) n = right;
+            else n = left;
+            tempList.addAll(cities);
+            while (tempList.size() > 1) {
+                tempList.remove(n);
+                NodeData next = searchForClosestNode(n.getKey(), tempList);
+                if (next != null)
+                    if (i == 0)
+                        shortestPathDist1 += shortestPathDist(n.getKey(), next.getKey());
+                    else
+                        shortestPathDist2 += shortestPathDist(n.getKey(), next.getKey());
+                List<NodeData> tempAns1 = shortestPath(n.getKey(), next.getKey());
+                for (NodeData d : tempAns1) {
+                    if (i == 0)
+                        ans1.add(d);
+                    else
+                        ans2.add(d);
+                }
+                if (tempList.size() > 1)
+                    if (i == 0)
+                        ans1.remove(ans1.size() - 1);
+                    else
+                        ans2.remove(ans2.size() - 1);
+                n = next;
+
+            }
+            tempList.clear();
         }
-        return path;
+        return shortestPathDist1 > shortestPathDist2 ? ans2 : ans1;
+
+    }
+
+    /**
+     * Private function which find the rightest node in given list by node geolocation(x value),
+     * This function is tsp helper function.
+     * @param cities
+     * @return
+     */
+    private NodeData findTheRightestNode(List<NodeData> cities) {
+        double rightestIndex = 0;
+        NodeData leftestNode = null;
+        for (NodeData n : cities) {
+            double x = n.getLocation().x();
+            if (x > rightestIndex) {
+                leftestNode = n;
+                rightestIndex = x;
+            }
+        }
+        return leftestNode;
+    }
+
+    /**
+     * Search the closest node to the relative src node by given templist of destination nodes candidates.
+     * TSP helper function.
+     * @param src
+     * @param tempList
+     * @return
+     */
+    private NodeData searchForClosestNode(int src, List<NodeData> tempList) {
+        double minDist = Double.MAX_VALUE;
+        NodeData closestNode = null;
+        for (NodeData n : tempList) {
+            double tempDist = shortestPathDist(src, n.getKey());
+            if (minDist > tempDist) {
+                closestNode = n;
+                minDist = tempDist;
+            }
+        }
+        return closestNode;
+    }
+
+    /**
+     * private function which find the leftest node in a given list by node geolocation (x value).
+     *  This function is tsp helper function.
+     * @param cities
+     * @return
+     */
+
+    private NodeData findTheLeftestNode(List<NodeData> cities) {
+        double leftestIndex = Double.MAX_VALUE;
+        NodeData leftestNode = null;
+        for (NodeData n : cities) {
+            double x = n.getLocation().x();
+            if (x < leftestIndex) {
+                leftestNode = n;
+                leftestIndex = x;
+            }
+        }
+        return leftestNode;
+    }
+
+    /**
+     * Building sub graph that contains all the edges and all the nodes that
+     * relative to specific cities list.
+     *
+     * @param cities
+     * @return
+     */
+    private DirectedWeightedGraph buildGraphOnlyForCities(List<NodeData> cities) {
+        DirectedWeightedGraph dwg = new DirectedWeightedGraph();
+        ArrayList<NodeData> tempCities = new ArrayList<>();
+        tempCities.addAll(cities);
+        ListIterator<NodeData> iter = tempCities.listIterator();
+        while (iter.hasNext()) {
+            NodeData node = iter.next();
+            if (!dwg.contains(node.getKey()))
+                dwg.addNode(new NodeData(node));
+            Iterator<EdgeData> eItr = this.g.edgeIter(this.getGraph().getNode(node.getKey()).getKey());
+            while (eItr.hasNext()) {
+                EdgeData ed = eItr.next();
+                int neig = ed.getDest();
+                if (!dwg.contains(neig)) {
+                    NodeData neigNode = new NodeData(this.getGraph().getNode(neig));
+                    dwg.addNode(neigNode);
+                    if (!tempCities.contains(neigNode)) {
+                        iter.add(neigNode);
+                        iter.previous();
+                    }
+
+                }
+                dwg.connect(ed.getSrc(), ed.getDest(), ed.getWeight());
+            }
+        }
+        return dwg;
     }
 
 }

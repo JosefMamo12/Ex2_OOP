@@ -93,6 +93,15 @@ class DirectedWeightedGraphAlgorithmsTest {
         assertTrue(graphAlgo.isConnected());
 
     }
+    @Test
+    void isConnectedBigGraph(){
+        this.graphCreator1(1000000,20000000);
+        DirectedWeightedGraphAlgorithms dwga = new DirectedWeightedGraphAlgorithms();
+        dwga.init(this.g);
+        System.out.println(dwga.isConnected());
+
+
+    }
 
     @Test
     void shortestPathDist() {
@@ -195,28 +204,19 @@ class DirectedWeightedGraphAlgorithmsTest {
 
     @Test
     void tsp() {
-        DirectedWeightedGraph g = graphCreator(5);
-        g.connect(0, 1, 3);
-        g.connect(1, 0, 5);
-        g.connect(0, 3, 2);
-        g.connect(3, 0, 1);
-        g.connect(0, 2, 3);
-        g.connect(2, 0, 5);
-        g.connect(4, 0, 2);
-        g.connect(0, 4, 1);
-        DirectedWeightedGraphAlgorithms dwg = new DirectedWeightedGraphAlgorithms();
-        ArrayList<NodeData> al = new ArrayList<>();
-        al.add(g.getNode(0));
-        al.add(g.getNode(1));
-        al.add(g.getNode(2));
+        DirectedWeightedGraph dwg = new DirectedWeightedGraph();
+        DirectedWeightedGraphAlgorithms dwga = new DirectedWeightedGraphAlgorithms();
+        dwga.init(dwg);
+        dwga.load("data/notCon.json");
+        NodeData d1 = new NodeData(dwg.getNode(5)), d2 = new NodeData(dwg.getNode(2)), d3 = new NodeData(dwg.getNode(4));
+        ArrayList<NodeData> cities = new ArrayList<>();
+        cities.add(d2);
+        cities.add(d1);
+        cities.add(d3);
+        dwga.tsp(cities);
 
-        dwg.init(g);
-        ArrayList<NodeData> p = (ArrayList<NodeData>) dwg.tsp(al);
-        for (NodeData d : p) {
-            System.out.print(d.getKey() + "->");
-        }
-        ;
     }
+
 
     /**
      * Bank of nodes;
@@ -275,7 +275,7 @@ class DirectedWeightedGraphAlgorithmsTest {
         }
         while (g.edgeSize() < numOfEdges) {
             int l = _rand.nextInt(numOfNodes);
-            int r = _rand.nextInt(numOfEdges);
+            int r = _rand.nextInt(numOfNodes);
             double w = _rand.nextDouble() + 1;
             if (l != r && w > 0)
                 g.connect(l, r, w);

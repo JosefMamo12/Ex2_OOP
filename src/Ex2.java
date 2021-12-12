@@ -47,7 +47,7 @@ public class Ex2 {
     }
 
     public static void main(String[] args) {
-        runGUI("data/TspTestingGraph.json");
+        runGUI("data/subGraph.json");
     }
 
 }

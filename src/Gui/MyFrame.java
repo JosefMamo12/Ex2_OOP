@@ -3,6 +3,9 @@ package Gui;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ *Frame of the screen.
+ */
 public class MyFrame extends JFrame {
     GraphDraw gd;
     Menu menu;

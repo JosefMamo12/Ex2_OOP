@@ -6,7 +6,10 @@ import classes.GeoLocation;
 import classes.NodeData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
+import java.util.ConcurrentModificationException;
+import java.util.Iterator;
 import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -14,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class DirectedWeightedGraphTest {
     NodeData[] nodes;
     DirectedWeightedGraph graph;
+    private static int nodesCounter = 0;
     private static Random _rand;
 
     public static void initSeed(long seed) {
@@ -60,23 +64,40 @@ class DirectedWeightedGraphTest {
         }
     }
 
-    /**
-     * I dont know how to test it
-     */
     @Test
     void nodeIter() {
-    }
+        int counter = 0;
+        graphCreator(100,2000);
+        Iterator<NodeData> nItr = this.graph.nodeIter();
+        while(nItr.hasNext()){
+            nItr.next();
+            counter++;
+        }
+        assertEquals(100,counter);
+        nItr = this.graph.nodeIter();
+        while (nItr.hasNext())
+            nItr.next();
+            graph.connect(5,13,200.233);
+        Iterator<NodeData> finalNItr = nItr;
+        Throwable exception = assertThrows(ConcurrentModificationException.class, () -> finalNItr.next());
+            assertEquals(DirectedWeightedGraph.ERROR,exception.getMessage());
 
-    /**
-     * I dont know how to test it
+    }/**
+     * Because i use the nodeIter function for this so exception will pop at this edgeIter!
      */
     @Test
     void edgeIter() {
+        int counter = 0;
+        graphCreator(800,500);
+        Iterator<EdgeData> eItr = this.graph.edgeIter();
+        while(eItr.hasNext()){
+            EdgeData e = eItr.next();
+            counter++;
+        }
+        assertEquals(counter,graph.edgeSize());
+
     }
 
-    /**
-     * I dont know how to test it
-     */
     @Test
     void testEdgeIter() {
     }
@@ -140,7 +161,7 @@ class DirectedWeightedGraphTest {
     void nodeSize() {
         assertEquals(0, graph.nodeSize());// empty graph check
         int expected = 10;
-        graphCreator(10, 0);
+        graphCreator(10,5 );
         assertEquals(expected, graph.nodeSize()); // creating graph with 10 nodes
         for (int i = 0; i < 5; i++) {
             graph.removeNode(i); // removing some nodes and check if the node size is up to date
@@ -168,6 +189,26 @@ class DirectedWeightedGraphTest {
         }
         assertEquals(mcCounter, graph.getMC()); // remove edges mc
     }
+
+    /**
+     * Check if this graph impelmentation can stand building big graph and small graph
+     */
+    @Test
+    public void GraphHandler() {
+        final int LIMIT = 6, NODE_SIZE = 10, EDGES_SIZE = 2;
+        DirectedWeightedGraph dwg = graphCreator1((int) Math.pow(NODE_SIZE, 0), 0);
+        assertEquals(1, dwg.nodeSize());
+        assertEquals(0, dwg.edgeSize());
+        dwg = graphCreator1((int) Math.pow(NODE_SIZE, 1), 90);
+        assertEquals(Math.pow(NODE_SIZE, 1), dwg.nodeSize());
+        assertEquals(90, dwg.edgeSize());
+        for (int i = 2; i <= LIMIT; i++) {
+            dwg = graphCreator1((int) Math.pow(NODE_SIZE,i), (int) Math.pow(NODE_SIZE,i+1)* EDGES_SIZE);
+            assertEquals((int) Math.pow(NODE_SIZE,i), dwg.getGraph().size());
+            assertEquals((int) Math.pow(NODE_SIZE,i+1)* EDGES_SIZE, dwg.edgeSize());
+        }
+    }
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////// PRIVATE FUNCTIONS //////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -219,4 +260,22 @@ class DirectedWeightedGraphTest {
             count++;
         }
     }
+
+    private DirectedWeightedGraph graphCreator1(int numOfNodes, int numOfEdges) {
+        DirectedWeightedGraph ans = new DirectedWeightedGraph();
+        nodeCreator(numOfNodes);
+        int count = 0;
+        for (NodeData node : this.nodes) {
+            ans.addNode(node);
+        }
+        while (ans.edgeSize() < numOfEdges) {
+            int l = _rand.nextInt(numOfNodes);
+            int r = _rand.nextInt(numOfNodes);
+            double w = _rand.nextDouble() + 1;
+            if (l != r && w > 0)
+                ans.connect(l, r, w);
+        }
+        return ans;
+    }
+
 }

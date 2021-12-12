@@ -1,6 +1,7 @@
 package classes;
 
 import api.GeoLocation;
+import org.junit.jupiter.api.function.Executable;
 
 import java.util.Objects;
 
@@ -13,7 +14,7 @@ public class NodeData implements src.api.NodeData, Comparable<NodeData> {
     private static int counter = 0;
 
 
-    public NodeData(classes.GeoLocation p){
+    public NodeData(GeoLocation p){
         this.key = counter;
         this.setLocation(p);
         this.weight = Double.MAX_VALUE;
@@ -102,4 +103,5 @@ public class NodeData implements src.api.NodeData, Comparable<NodeData> {
         else if (this.weight < o.weight) return -1;
         return 0;
     }
+
 }

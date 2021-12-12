@@ -12,6 +12,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
+/**
+ * Menu bar thats include file (save,load) and Edit(Add edge, Add Node ....)
+ */
 public class myMenuBar extends JMenuBar implements ActionListener, MouseListener {
     GraphDraw gd;
     DirectedWeightedGraphAlgorithms dwg;
@@ -22,11 +25,13 @@ public class myMenuBar extends JMenuBar implements ActionListener, MouseListener
     JMenuItem addNode;
     JMenuItem addEdge;
     JMenuItem cleanGraph;
+    JMenuItem removeNode;
     JMenu load;
     JMenuItem G1;
     JMenuItem G2;
     JMenuItem G3;
     JMenuItem removeEdge;
+    boolean enabled = false;
 
     myMenuBar(api.DirectedWeightedGraphAlgorithms g, GraphDraw gd) {
         dwg = (DirectedWeightedGraphAlgorithms) g;
@@ -38,6 +43,7 @@ public class myMenuBar extends JMenuBar implements ActionListener, MouseListener
         file = new JMenu("File");
         load = new JMenu("Load");
 
+        removeNode = new JMenuItem("Remove Node");
         removeEdge = new JMenuItem("Remove Edge");
         addNode = new JMenuItem("Add node");
         addEdge = new JMenuItem("Add edge");
@@ -56,8 +62,11 @@ public class myMenuBar extends JMenuBar implements ActionListener, MouseListener
         file.add(save);
         file.add(load);
 
+
         edit.add(addNode);
         edit.add(addEdge);
+        edit.add(removeEdge);
+        edit.add(removeNode);
         edit.add(cleanGraph);
 
         menu.add(file);
@@ -70,6 +79,8 @@ public class myMenuBar extends JMenuBar implements ActionListener, MouseListener
         G3.addActionListener(this);
         addEdge.addActionListener(this);
         addNode.addActionListener(this);
+        removeEdge.addActionListener(this);
+        removeNode.addActionListener(this);
 
     }
 
@@ -105,7 +116,7 @@ public class myMenuBar extends JMenuBar implements ActionListener, MouseListener
             gd.repaint();
         }
         if (e.getSource() == addNode) {
-
+            enabled = true;
             JDialog d = new JDialog(f, "ADD NODE", true);
             d.setBounds(300, 150, 200, 100);
             d.add(new JLabel("Please tap on the screen"));
@@ -123,32 +134,61 @@ public class myMenuBar extends JMenuBar implements ActionListener, MouseListener
                 int dest = Integer.parseInt(JOptionPane.showInputDialog(f, "Please enter destination node(Integer)", "Destination"));
                 double weight = Double.parseDouble(JOptionPane.showInputDialog(f, "Please enter weight bigger than 0 (Double)", "Weight"));
 
-                if (src < dwa.nodeSize() && src >= 0 && dest >= 0 && dest < dwa.nodeSize() && weight > 0) {
+                if (dwa.getNode(src) != null && dwa.getNode(dest) != null && weight > 0) {
                     dwa.connect(src, dest, weight);
                     gd.repaint();
                     break;
-                }
-                else
-                JOptionPane.showMessageDialog(f, "Wrong inputs please try again", JOptionPane.INPUT_VALUE_PROPERTY, 0);
+                } else
+                    JOptionPane.showMessageDialog(f, "Wrong inputs please try again", JOptionPane.INPUT_VALUE_PROPERTY, JOptionPane.ERROR_MESSAGE);
             }
         }
-        if (e.getSource() == cleanGraph){
+        if (e.getSource() == removeEdge) {
+            DirectedWeightedGraph dwa = dwg.getGraph();
+            while (true) {
+                int src = Integer.parseInt(JOptionPane.showInputDialog(f, "Please enter source node(Integer)", "Source"));
+                int dest = Integer.parseInt(JOptionPane.showInputDialog(f, "Please enter destination node(Integer)", "Destination"));
+                if (dwa.getNode(src) != null && dwa.getNode(dest) != null) {
+                    dwa.removeEdge(src, dest);
+                    gd.repaint();
+                    break;
+                } else
+                    JOptionPane.showMessageDialog(f, "Wrong inputs please try again", JOptionPane.INPUT_VALUE_PROPERTY, JOptionPane.ERROR_MESSAGE);
+            }
+        }
+        if (e.getSource() == cleanGraph) {
             dwg.clean();
             gd.repaint();
         }
+
+        if (e.getSource() == removeNode) {
+            DirectedWeightedGraph dwa = dwg.getGraph();
+            while (true) {
+                int nodeToRemove = Integer.parseInt(JOptionPane.showInputDialog(f, "Please enter node number to remove(Integer)", "RemovedNODE"));
+                if (dwa.getNode(nodeToRemove) != null) {
+                    dwa.removeNode(nodeToRemove);
+                    gd.repaint();
+                    break;
+                } else
+                    JOptionPane.showMessageDialog(f, "Wrong input please try again", JOptionPane.INPUT_VALUE_PROPERTY, JOptionPane.ERROR_MESSAGE);
+            }
+
+        }
     }
+
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        DirectedWeightedGraph dwa = dwg.getGraph();
-        int x = e.getX();
-        int y = e.getY();
-        System.out.println(x);
-        System.out.println(y);
-        Point3D p = gd.range.frame2world(new GeoLocation(x, y, 0));
-        dwa.addNode(new NodeData(new GeoLocation(p.x(), p.y(), p.z())));
-        gd.repaint();
-
+        if(enabled) {
+            DirectedWeightedGraph dwa = dwg.getGraph();
+            int x = e.getX();
+            int y = e.getY();
+            System.out.println(x);
+            System.out.println(y);
+            Point3D p = gd.range.frame2world(new GeoLocation(x, y, 0));
+            dwa.addNode(new NodeData(new GeoLocation(p.x(), p.y(), p.z())));
+            gd.repaint();
+            enabled = false;
+        }
 
     }
 
