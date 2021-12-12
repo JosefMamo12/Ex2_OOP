@@ -93,14 +93,22 @@ class DirectedWeightedGraphAlgorithmsTest {
         assertTrue(graphAlgo.isConnected());
 
     }
+
     @Test
-    void isConnectedBigGraph(){
-        this.graphCreator1(1000000,20000000);
+    void isConnectedBigGraph() {
+        this.graphCreator1(10000, 200000);
         DirectedWeightedGraphAlgorithms dwga = new DirectedWeightedGraphAlgorithms();
         dwga.init(this.g);
         System.out.println(dwga.isConnected());
 
+    }
 
+    @Test
+    void centerBigGraphs() {
+        this.graphCreator1(1000, 20000);
+        DirectedWeightedGraphAlgorithms dwga = new DirectedWeightedGraphAlgorithms();
+        dwga.init(this.g);
+        dwga.center();
     }
 
     @Test
@@ -116,9 +124,10 @@ class DirectedWeightedGraphAlgorithmsTest {
         g.connect(4, 0, 3);
         DirectedWeightedGraphAlgorithms dwa = new DirectedWeightedGraphAlgorithms();
         dwa.init(g);
+        assertEquals(7, dwa.shortestPathDist(0, 5));
+        g.removeEdge(0, 1);
+        assertEquals(-1, dwa.shortestPathDist(0, 5));
 
-        double d = dwa.shortestPathDist(0, 5);
-        assertEquals(d, 7);
     }
 
     @Test
@@ -141,14 +150,27 @@ class DirectedWeightedGraphAlgorithmsTest {
         g1.connect(12, 11, 5);
         g1.connect(11, 8, 3);
         g1.connect(8, 3, 4);
+        DirectedWeightedGraphAlgorithms dwa1 = new DirectedWeightedGraphAlgorithms();
+        dwa1.init(g1);
+        String actual = "";
+        String excpected = "->1->2->3->5->10->12";
+        List<NodeData> lst = dwa1.shortestPath(1, 12);
+        for (NodeData nodeData : lst) {
+            actual += "->" + nodeData.getKey();
+        }
+        g1.removeNode(5);
+        assertEquals(null,dwa1.shortestPath(1,12));
+        assertEquals(excpected, actual);
         DirectedWeightedGraphAlgorithms dwa = new DirectedWeightedGraphAlgorithms();
         dwa.init(g);
         dwa.load("data/G1.json");
+        actual = "";
+        excpected = "->0->1->2->6->7->8->9";
         List<NodeData> lnd = dwa.shortestPath(0, 9);
         for (NodeData nodeData : lnd) {
-            System.out.print("->" + nodeData.getKey());
+            actual += "->" + nodeData.getKey();
         }
-        System.out.println();
+        assertEquals(actual, excpected);
 //        assertEquals(d, 7);
     }
 
@@ -279,6 +301,12 @@ class DirectedWeightedGraphAlgorithmsTest {
             double w = _rand.nextDouble() + 1;
             if (l != r && w > 0)
                 g.connect(l, r, w);
+        }
+    }
+
+    private static void printPath(List<NodeData> lst) {
+        for (NodeData nodeData : lst) {
+            System.out.print("->" + nodeData.getKey());
         }
     }
 }
