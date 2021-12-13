@@ -26,7 +26,7 @@ Class GeoLocation - represent the coordinates of the nodes.
 
 Class NodeData- represent the nodes.
 
-**Package Guy** - this package will present the results in a graphic - visual way.
+**Package gui** - this package will present the results in a graphic - visual way.
 Inside we have the next classes.
 
 GraphDraw - draw the graph.
@@ -76,13 +76,34 @@ MyMenuBar - doing the top frame of the menu bar, where the "edit" and "file" but
 
 **private DirectedWeightedGraph buildGraphOnlyForCities(List<NodeData> cities)** -> Building sub graph that contains all the edges and all the nodes that relative to specific cities list.
 
-## gui:
+## GUI:
 gui is a class who Implements a graphical-visual interface where we can visually see the program results.
-you can see visually your graph.
 ![you can see visually your graph](https://github.com/JosefMamo12/Ex2_OOP/blob/master/image/graph.jpeg)
-you can edit your graph.
 ![you can edit your graph](https://github.com/JosefMamo12/Ex2_OOP/blob/master/image/edit.jpeg)
 ![you can laod and save files](https://github.com/JosefMamo12/Ex2_OOP/blob/master/image/file%20%20-%20status%20bar.jpeg)
-you can laod and save files.
 ![you can see the menu - where ypu can choose to operate algorithms on the graph](https://github.com/JosefMamo12/Ex2_OOP/blob/master/image/menu.jpeg)
-you can see the menu - where ypu can choose to operate algorithms on the graph.
+  
+## Algoritham analysis for multiple big graphs:
+Center() 1k nodes 20k Edges 2 seconds.
+
+Center() 10k nodes 200k edges 5min 20 sec.
+
+Center() 100k nodes 2m edges java heap exception.
+
+isConnected() 10k nodes 200k edges 357ms.
+
+isConnected() 100k nodes 2m edges 3 sec 504 ms.
+
+isConnected() 1m nodes 20m edges 26 sec 486ms.
+
+tsp () 1k nodes 20k edges (3 cities) 293 ms.
+
+tsp () 10k nodes 200k edges (3 cities) 1 sec 672ms.
+
+tsp () 100k nodes 2m edges (3 cities) 35 sec 242 ms.
+
+shortestPath() 10k nodes 200k edges 51ms.
+
+shortestPath() 100k nodes 2m edges 2sec 798ms.
+
+shortestPath() 1m nodes 20m edges 51s sec 643 ms.
