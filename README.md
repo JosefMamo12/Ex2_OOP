@@ -31,7 +31,7 @@ Inside we have the next classes.
 
 GraphDraw - draw the graph.
 
-Menu - the right side frame, where you have the buttons of connected and TSP algorithm.
+Menu - the right side frame, where you have the buttons of connected ,TSP algorithm...
 
 MyFrame -doing the whole visual frame.
 
@@ -46,15 +46,7 @@ MyMenuBar - doing the top frame of the menu bar, where the "edit" and "file" but
 
 **public boolean isConnected()** -> Graph is called connected if and only if there is path between u and v which u and v are vertex in the graph. Did it with the help of dfs algorithm which go over all the graph and see it there is a path between a source code to all other nodes in the graph, Also transposed the graph to save the amount of time by using the dfs algorithm to each node.
 
-**public void connect(int src, int dest, double w)** ->  Connect between source and dest and edding as EdgeData object to the graph. Override if the src and dest is already exist at graph. Throw exceptions when one of the varibels is forbiden.
-
-**public Iterator<NodeData> nodeIter()** ->  Iterating over all varibles of the data structure that contains all the nodes of the graph, Throw exception when trying to change the graph while iterating.
-
-**public Iterator<EdgeData> edgeIter()** -> Iterate over all the edges of the graph using nodeIter() function and edgeIter(int node_id) to save using to another data structure. will throw exception because the use of the related iterators.
-
-**public NodeData removeNode(int key)** -> Remove of node by given key remove all the edges that out of that node, remove all the nodes thats get in to this node by using EdgeIn data structure. Returning null if the key is not exist.
-
-**public EdgeData removeEdge(int src, int dest)** -> Remove edge by given source and destination. Return null if the edge is not exist.
+**public void connect(int src, int dest, double w)** ->  Connect between source and dest and adding as EdgeData object to the graph. Override if the src and dest is already exist at graph. Throw exceptions when one of the varibels is forbiden.
 
 **private DirectedWeightedGraph graphTranspose()** - > Helper to is connected graph, return new transposed graph, by opposited all the edges direction.
 
@@ -62,7 +54,7 @@ MyMenuBar - doing the top frame of the menu bar, where the "edit" and "file" but
 
 **public void DIJKSTRA(int src)** -> Known algorithm which given source node and it returning the shortest path from the particular source node to all other nodes in the graph Time Complexity O(V + E*log*V).
 
-**public void clean() ** -> Clean method like cleaning buffer of the graph before we do a new algorithm.
+**public void clean()** -> Clean method like cleaning buffer of the graph before we do a new algorithm.
 
 **public double shortestPathDist(int src, int dest)** -> Return the distance between the source node to the dest node, by computing the weights thats exists on each edge thats have been contained in the path.
 
@@ -75,6 +67,16 @@ MyMenuBar - doing the top frame of the menu bar, where the "edit" and "file" but
 **public List<NodeData> tsp(List<NodeData> cities)** -> * This particular tsp is kind of greedy algorithm, which chose the better node to start from. In the algorithm I issolate the relative nodes and edges that related to cities. I going over leftest city (x Location) and then looking for the promsing closest nod by using shortestPathDist function. The algoritm works for both sides to see if it better start from rightest side.
 
 **private DirectedWeightedGraph buildGraphOnlyForCities(List<NodeData> cities)** -> Building sub graph that contains all the edges and all the nodes that relative to specific cities list.
+
+**public Iterator<NodeData> nodeIter()** ->  Iterating over all varibles of the data structure that contains all the nodes of the graph, Throw exception when trying to change the graph while iterating.
+
+**public Iterator<EdgeData> edgeIter()** -> Iterate over all the edges of the graph using nodeIter() function and edgeIter(int node_id) to save using to another data structure. will throw exception because the use of the related iterators.
+
+**public NodeData removeNode(int key)** -> Remove of node by given key remove all the edges that out of that node, remove all the nodes thats get in to this node by using EdgeIn data structure. Returning null if the key is not exist.
+
+**public EdgeData removeEdge(int src, int dest)** -> Remove edge by given source and destination. Return null if the edge is not exist.
+
+
 
 ## GUI:
 gui is a class who Implements a graphical-visual interface where we can visually see the program results.
