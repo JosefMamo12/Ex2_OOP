@@ -78,11 +78,10 @@ MyMenuBar - doing the top frame of the menu bar, where the "edit" and "file" but
 
 ## gui:
 gui is a class who Implements a graphical-visual interface where we can visually see the program results.
-
-![you can edit your graph](https://github.com/JosefMamo12/Ex2_OOP/blob/master/image/edit.jpeg)
-
-![you can laod and save files](https://github.com/JosefMamo12/Ex2_OOP/blob/master/image/file%20%20-%20status%20bar.jpeg)
-
 ![you can see visually your graph](https://github.com/JosefMamo12/Ex2_OOP/blob/master/image/graph.jpeg)
-
+you can see visually your graph.
+![you can edit your graph](https://github.com/JosefMamo12/Ex2_OOP/blob/master/image/edit.jpeg)
+you can edit your graph![you can laod and save files](https://github.com/JosefMamo12/Ex2_OOP/blob/master/image/file%20%20-%20status%20bar.jpeg)
+you can laod and save files
 ![you can see the menu - where ypu can choose to operate algorithms on the graph](https://github.com/JosefMamo12/Ex2_OOP/blob/master/image/menu.jpeg)
+you can see the menu - where ypu can choose to operate algorithms on the graph.
