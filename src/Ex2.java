@@ -47,7 +47,7 @@ public class Ex2 {
     }
 
     public static void main(String[] args) {
-        runGUI("data/subGraph.json");
+        runGUI("data/notCon.json");
     }
 
 }

@@ -3,11 +3,9 @@ package test;
 import classes.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.w3c.dom.Node;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -102,13 +100,31 @@ class DirectedWeightedGraphAlgorithmsTest {
         System.out.println(dwga.isConnected());
 
     }
-
+    @Test
+    void ShortestPathBigGraphTest (){
+        this.graphCreator1(1000000,20000000);
+        DirectedWeightedGraphAlgorithms dwga = new DirectedWeightedGraphAlgorithms();
+        dwga.init(this.g);
+       printPath(dwga.shortestPath(12,5000));
+    }
     @Test
     void centerBigGraphs() {
         this.graphCreator1(1000, 20000);
         DirectedWeightedGraphAlgorithms dwga = new DirectedWeightedGraphAlgorithms();
         dwga.init(this.g);
         dwga.center();
+    }
+    @Test
+    void tspBigGraphs(){
+        this.graphCreator1(100000, 2000000);
+        DirectedWeightedGraphAlgorithms dwga = new DirectedWeightedGraphAlgorithms();
+        dwga.init(this.g);
+        List<NodeData> lst = new ArrayList<>();
+        lst.add(new NodeData(nodes[1]));
+        lst.add(new NodeData(nodes[150]));
+        lst.add(new NodeData(nodes[870]));
+        printPath(dwga.tsp(lst));
+
     }
 
     @Test
@@ -225,20 +241,48 @@ class DirectedWeightedGraphAlgorithmsTest {
     }
 
     @Test
-    void tsp() {
-        DirectedWeightedGraph dwg = new DirectedWeightedGraph();
+    /**
+     * Tsp check for not connected graph which the relative vertics are being connected
+     * When 0 is not part of the path meaning impossible to get to 0 node
+     */
+    void tspNotConnectedGraph() {
         DirectedWeightedGraphAlgorithms dwga = new DirectedWeightedGraphAlgorithms();
-        dwga.init(dwg);
+        dwga.init(g);
         dwga.load("data/notCon.json");
-        NodeData d1 = new NodeData(dwg.getNode(5)), d2 = new NodeData(dwg.getNode(2)), d3 = new NodeData(dwg.getNode(4));
+        NodeData d1 = new NodeData(g.getNode(5)), d2 = new NodeData(g.getNode(2)), d3 = new NodeData(g.getNode(4));
         ArrayList<NodeData> cities = new ArrayList<>();
         cities.add(d2);
         cities.add(d1);
         cities.add(d3);
+        String EXPECTED= "->2->3->4->5";
+        String ACTUAL = stringPathBuilder(dwga.tsp(cities));
+        assertEquals(EXPECTED,ACTUAL);
+        cities.clear();
+        d1 = new NodeData(g.getNode(0));
+        cities.add(d1); // adding the 0 node.
+        cities.add(d2);
+        cities.add(d3);
         dwga.tsp(cities);
+        ACTUAL = stringPathBuilder(dwga.tsp(cities));
+        EXPECTED = null;
+        assertEquals(ACTUAL,EXPECTED);
 
     }
-
+    @Test
+    void tspConnectedGraph(){
+        DirectedWeightedGraphAlgorithms dwga = new DirectedWeightedGraphAlgorithms();
+        dwga.init(g);
+        assertEquals(null,dwga.tsp(null)); // null list
+        dwga.load("data/subGraph.json");
+        NodeData d1 = new NodeData(g.getNode(0)), d2 = new NodeData(g.getNode(2)), d3 = new NodeData(g.getNode(4));
+        ArrayList<NodeData> al = new ArrayList<>();
+        al.add(d1);
+        al.add(d2);
+        al.add(d3);
+        String EXPECTED= "->0->1->2->3->4";
+        String ACTUAL = stringPathBuilder(dwga.tsp(al));
+        assertEquals(EXPECTED,ACTUAL);
+    }
 
     /**
      * Bank of nodes;
@@ -308,5 +352,15 @@ class DirectedWeightedGraphAlgorithmsTest {
         for (NodeData nodeData : lst) {
             System.out.print("->" + nodeData.getKey());
         }
+    }
+    private static String stringPathBuilder(List<NodeData> lst) {
+        if(lst!= null) {
+            String st = "";
+            for (NodeData nodeData : lst) {
+                st += "->" + nodeData.getKey();
+            }
+            return st;
+        }
+        return null;
     }
 }

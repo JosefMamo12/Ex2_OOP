@@ -389,11 +389,16 @@ public class DirectedWeightedGraphAlgorithms implements api.DirectedWeightedGrap
     @Override
     public List<NodeData> tsp(List<NodeData> cities) {
         clean();
-        if (cities == null)
+        if (cities == null || cities.size() == 1)
             return null;
-        if(cities.size() == 2) return shortestPath(cities.get(0).getKey(),cities.get(1).getKey());
+        if(cities.size() == 2) {
+            return shortestPathDist(cities.get(0).getKey(),cities.get(1).getKey()) > shortestPathDist(cities.get(0).getKey(),cities.get(1).getKey()) ?
+                    shortestPath(cities.get(0).getKey(),cities.get(1).getKey()) :  shortestPath(cities.get(1).getKey(),cities.get(0).getKey());
+        }
         DirectedWeightedGraph graphForTsp = buildGraphOnlyForCities(cities);
-        if (!this.isConnected()) return null;
+        DirectedWeightedGraphAlgorithms tspAlgo = new DirectedWeightedGraphAlgorithms();
+        tspAlgo.init(graphForTsp);
+        if (!tspAlgo.isConnected()) return null;
 
 
         ArrayList<NodeData> ans1 = new ArrayList<>();
